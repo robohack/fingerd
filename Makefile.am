@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.5 1997/09/15 00:42:07 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.6 1999/01/15 18:12:13 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -67,10 +67,10 @@ SOELIM = soelim
 SUFFIXES = .8 .ps .txt
 
 .8.txt:
-	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -man > $@
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -mdoc > $@
 
 .8.ps:
-	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -man $(ROFFDEV) > $@
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -mdoc $(ROFFDEV) > $@
 
 #
 # hard-coded dependencies
