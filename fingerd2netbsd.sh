@@ -5,7 +5,7 @@
 #
 # NOTE: needs a POSIX /bin/sh to run....
 #
-#ident	"@(#)$Name:  $:$Id: fingerd2netbsd.sh,v 1.1 1999/01/15 19:55:01 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: fingerd2netbsd.sh,v 1.2 1999/01/15 20:34:06 woods Exp $"
 
 PWD=$(/bin/pwd)
 version=$(basename $PWD | sed -e 's/fingerd-//')
@@ -13,6 +13,10 @@ releasetag=$(basename $PWD | sed -e 's/\./_/g')
 
 cpsed ()
 {
+	if [ ! -r $1 ] ; then
+		echo "$1: no such file!" 1>&2
+		exit 1
+	if
 	# assume that there will only be one #ident line....
 	sed -e '/^#ident/i\
 #ident	"@(#)$\Name$:$\NetBSD$"\
@@ -28,6 +32,10 @@ cpsed ()
 IMPORTDIR="import.d"
 
 mkdir ${IMPORTDIR}
+
+if [ ! -r Makefile.BSD -o ! -r fingerd.8 ] ; then
+	./configure
+fi
 
 # note the rename....
 cpsed Makefile.BSD ${IMPORTDIR}/Makefile
