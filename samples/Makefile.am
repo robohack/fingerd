@@ -1,7 +1,7 @@
 #
 #	Makefile.am - for automake
 #
-#ident	"@(#)fingerd/src:$Name:  $:$Id: Makefile.am,v 1.2 1997/09/12 19:27:14 woods Exp $"
+#ident	"@(#)fingerd/samples:$Name:  $:$Id: Makefile.am,v 1.3 1997/09/14 21:11:09 woods Exp $"
 
 AUTOMAKE_OPTIONS = foreign no-dependencies cvs
 
