@@ -1,6 +1,6 @@
  /*
-  * rfc931() speaks a common subset of the RFC 931, AUTH, TAP and IDENT
-  * protocols. The code queries an RFC 931 etc. compatible daemon on a remote
+  * rfc931() speaks a common subset of the RFC 931, AUTH, TAP, IDENT and RFC
+  * 1413 protocols. It queries an RFC 931 etc. compatible daemon on a remote
   * host to look up the owner of a connection. The information should not be
   * used for authentication purposes. This routine intercepts alarm signals.
   * 
@@ -9,12 +9,9 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: rfc931.c,v 1.3 1997/04/07 18:44:17 woods Exp $"
-
 #ifndef lint
-static char sccsid[] = "@(#) rfc931.c 1.8 93/12/13 22:23:20";
+static char sccsid[] = "@(#) rfc931.c 1.10 95/01/02 16:11:34";
 #endif
-
 
 /* System libraries. */
 
@@ -25,29 +22,16 @@ static char sccsid[] = "@(#) rfc931.c 1.8 93/12/13 22:23:20";
 #include <netinet/in.h>
 #include <setjmp.h>
 #include <signal.h>
-
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
-# include <string.h>
-#else
-# ifndef HAVE_STRCHR
-#  define strchr index
-#  define strrchr rindex
-# endif
-# include <strings.h>
-extern char *strchr(), *strrchr(), *strtok();
-#endif
-
-#include "fingerd.h"
-
-extern char *inet_ntoa();
+#include <string.h>
 
 /* Local stuff. */
 
+#include "tcpd.h"
 
 #define	RFC931_PORT	113		/* Semi-well-known port */
 #define	ANY_PORT	0		/* Any old port will do */
 
-int     rfc931_timeout = IDENT_TIMEOUT;/* Global so it can be changed */
+int     rfc931_timeout = RFC931_TIMEOUT;/* Global so it can be changed */
 
 static jmp_buf timebuf;
 
@@ -62,30 +46,14 @@ int     protocol;
     FILE   *fp;
 
     if ((s = socket(domain, type, protocol)) < 0) {
-	syslog(LOG_ERR, "socket: %m");
+	tcpd_warn("socket: %m");
 	return (0);
     } else {
 	if ((fp = fdopen(s, "r+")) == 0) {
-	    syslog(LOG_ERR, "fdopen: %m");
+	    tcpd_warn("fdopen: %m");
 	    close(s);
 	}
 	return (fp);
-    }
-}
-
-/* bind_connect - bind both ends of a socket */
-
-int     bind_connect(s, local, remote, length)
-int     s;
-struct sockaddr *local;
-struct sockaddr *remote;
-int     length;
-{
-    if (bind(s, local, length) < 0) {
-	syslog(LOG_ERR, "bind: %m");
-	return (-1);
-    } else {
-	return (connect(s, remote, length));
     }
 }
 
@@ -99,18 +67,19 @@ int     sig;
 
 /* rfc931 - return remote user name, given socket structures */
 
-char   *rfc931(rmt_sin, our_sin)
+void    rfc931(rmt_sin, our_sin, dest)
 struct sockaddr_in *rmt_sin;
 struct sockaddr_in *our_sin;
+char   *dest;
 {
     unsigned rmt_port;
     unsigned our_port;
     struct sockaddr_in rmt_query_sin;
     struct sockaddr_in our_query_sin;
-    static char user[256];		/* XXX */
+    char    user[256];			/* XXX */
     char    buffer[512];		/* XXX */
     char   *cp;
-    char   *result = "[unknown]";	/* XXX */
+    char   *result = unknown;
     FILE   *fp;
 
     /*
@@ -148,10 +117,10 @@ struct sockaddr_in *our_sin;
 	    rmt_query_sin = *rmt_sin;
 	    rmt_query_sin.sin_port = htons(RFC931_PORT);
 
-	    if (bind_connect(fileno(fp),
-			     (struct sockaddr *) & our_query_sin,
-			     (struct sockaddr *) & rmt_query_sin,
-			     sizeof(our_query_sin)) >= 0) {
+	    if (bind(fileno(fp), (struct sockaddr *) & our_query_sin,
+		     sizeof(our_query_sin)) >= 0 &&
+		connect(fileno(fp), (struct sockaddr *) & rmt_query_sin,
+			sizeof(rmt_query_sin)) >= 0) {
 
 		/*
 		 * Send query to server. Neglect the risk that a 13-byte
@@ -192,5 +161,5 @@ struct sockaddr_in *our_sin;
 	}
 	fclose(fp);
     }
-    return (result);
+    STRN_CPY(dest, result, STRING_LENGTH);
 }
