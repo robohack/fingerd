@@ -30,7 +30,7 @@
  * fingerd main loop
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.5 1997/09/12 19:30:03 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.6 1997/09/15 00:42:51 woods Exp $"
 
 #include <config.h>
 
@@ -73,6 +73,9 @@ extern int errno;
 #include <stdio.h>
 
 #include "fingerd.h"
+#include "tcpd.h"			/* XXX the local one, not any system one! */
+
+char unknown[] = NO_IDENT_REPLY;
 
 extern	char	*optarg;
 extern	int	optind, opterr;
@@ -159,7 +162,10 @@ main(argc, argv)
 		err("getsockname: %s", strerror(errno));
 		
 	if (doident || forceident) {
-		if (!(ruser = strdup(rfc931(&sin, &laddr))))
+		char idreply[STRING_LENGTH];
+
+		rfc931(&sin, &laddr, idreply);
+		if (!(ruser = strdup(idreply)))
 			err("strdup: no memory - %s", strerror(errno));
 	} else { 
 		if (!(ruser = strdup(NO_IDENT_DONE)))
