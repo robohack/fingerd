@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.10 1999/01/17 04:08:26 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.11 1999/01/17 04:27:24 woods Exp $"
 
 /*
  * misc. routines
@@ -138,7 +138,8 @@ conf_file_path(cf)
 
 	if (!(pn = malloc(strlen(cf) + 1 + strlen(confdir))))
 		err("malloc(): %s", strerror(errno));
-	return (strcat(strcat(strcpy(pn, cf), "/"), confdir));
+
+	return (strcat(strcat(strcpy(pn, confdir), "/"), cf));
 }
 
 int
