@@ -5,7 +5,7 @@
 #
 # NOTE: needs a POSIX /bin/sh to run....
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd2netbsd.sh,v 1.4 1999/01/17 01:19:50 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd2netbsd.sh,v 1.5 2000/12/02 04:30:58 woods Exp $"
 
 PWD=$(/bin/pwd)
 version=$(basename $PWD | sed -e 's/fingerd-//')
@@ -40,6 +40,11 @@ if [ ! -r Makefile.BSD ] ; then
 fi
 
 # note the renames....
+cpsed AUTHORS ${IMPORTDIR}/AUTHORS
+cpsed NEWS ${IMPORTDIR}/NEWS
+cpsed README ${IMPORTDIR}/README
+cpsed ToDo ${IMPORTDIR}/ToDo
+cpsed THANKS ${IMPORTDIR}/THANKS
 cpsed Makefile.BSD ${IMPORTDIR}/Makefile
 cpsed fingerd.8.in ${IMPORTDIR}/fingerd.8
 cpsed fingerd.c ${IMPORTDIR}/fingerd.c
