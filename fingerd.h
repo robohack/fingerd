@@ -29,10 +29,10 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: fingerd.h,v 1.7 1999/01/15 19:38:38 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: fingerd.h,v 1.8 1999/01/17 01:15:27 woods Exp $"
 
-#ifndef FINGERD_SYSLOG
-# define FINGERD_SYSLOG		LOG_DAEMON /* default syslog facility */
+#ifndef FINGERD_SYSLOG_FACILITY
+# define FINGERD_SYSLOG_FACILITY LOG_DAEMON /* default syslog facility */
 #endif
 #ifndef	IDENT_TIMEOUT
 # define IDENT_TIMEOUT		30	/* ident timeout */
@@ -59,7 +59,8 @@
 #define	ACCESS_DEFAULTSHORT	0x0200
 #define	ACCESS_SHOWHOST		0x0400
 
-extern char	version[];
+extern char    *confdir;
+extern char     version[];
 
 #define NO_IDENT_DONE		"[no-ident]"
 
