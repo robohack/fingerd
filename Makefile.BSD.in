@@ -3,7 +3,13 @@
 #
 # Copyright (C) 1999 Planix, Inc. - All rights reserved.
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.4 1999/01/17 02:10:56 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.5 2000/12/02 04:29:32 woods Exp $"
+#
+# NOTE:  It is expected that this file will be processed to create the
+# final version with:
+#
+#	./configure --prefix=/usr --bindir=/usr/bin --sysconfdir=/etc --localstatedir=/var
+#
 
 # adjust these as desired:
 CPPFLAGS+= -DPATH_FINGER=\"/usr/bin/finger\"
