@@ -30,7 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.4 1997/04/07 18:44:25 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.5 1999/01/15 18:09:20 woods Exp $"
 
 #ifndef lint
 static char copyright[] =
@@ -38,27 +38,31 @@ static char copyright[] =
 static char sccsid[] = "@(#)wildcard.c	1.1 (Powerdog) 94/11/08";
 #endif /* not lint */
 
-#include <config.h>
-
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
-# include <string.h>
-#else
-# include <strings.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
 #ifdef REGEX_COMPAT
-#define wc_comp	re_comp
-#define wc_exec	re_exec
-#endif /* REGEX_COMPAT */
 
-#define WC_MAX	1024
+# define wc_comp	re_comp
+# define wc_exec	re_exec
 
-#define CEND	1
-#define CANY	2
-#define CANYC	3
-#define CRANGE	4
-#define CNRANGE	5
-#define CTEXT	6
+#else /* REGEX_COMPAT */
+
+# if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+#  include <string.h>
+# else
+#  include <strings.h>
+# endif
+
+# define WC_MAX	1024
+
+# define CEND		1
+# define CANY		2
+# define CANYC		3
+# define CRANGE		4
+# define CNRANGE	5
+# define CTEXT		6
 
 static char	*longerr = "Wildcard expression too long",
 		buf[WC_MAX] = { CEND };
@@ -177,7 +181,7 @@ wc_subexec(s, p)
 	int	i,
 		n;
 
-	while (*s != 0 && *p != CEND)
+	while (*s != 0 && *p != CEND) {
 		switch (*p++) {
 		case CTEXT:
 			i = (int) *p++;
@@ -225,7 +229,7 @@ wc_subexec(s, p)
 			p += i;
 			break;
 		}
-
+	}
 	return *s == 0 && *p == CEND ? 1 : 0;
 }
 
@@ -238,3 +242,5 @@ wc_exec(s)
 
 	return wc_subexec(s, buf);
 }
+
+#endif /* REGEX_COMPAT */
