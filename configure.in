@@ -1,7 +1,7 @@
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
-#ident	"@(#)fingerd:$Name:  $:$Id: configure.in,v 1.1 1997/04/05 23:46:02 woods Exp $"
+dnl#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.2 1997/04/05 23:57:03 woods Exp $"
 
 AC_INIT(fingerd.c)
 
