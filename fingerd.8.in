@@ -24,7 +24,7 @@
 .\"  		shanzer@foobar.com
 .\"
 .\"
-.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.3 1997/09/12 19:26:17 woods Exp $"
+.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.4 1999/01/14 23:16:26 woods Exp $"
 .\"
 .TH FINGERD 8 "1997 April 6" "$Name:  $" "Local Internet Daemons"
 .SH NAME
@@ -90,7 +90,7 @@ The format of the file is:
 .IP
 [\fIuser-name\fR\fB@\fR]\fIhost-name	permission\fR
 .LP
-\fBfingerd attempts to match the remote user's name and the remote host's name
+\fBfingerd\fR attempts to match the remote user's name and the remote host's name
 with what is in the access file.  If a match is found, \fBpermission\fR
 is used to process the request.  Both the \fBuser-name\fR and the
 \fBhostname\fR can either be literal strings or wildcards.  The first line to
