@@ -26,10 +26,10 @@
  *
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.5 1997/09/12 19:24:57 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.6 1999/01/15 17:58:15 woods Exp $"
 
-#ifndef FINGER_SYSLOG
-# define FINGER_SYSLOG		LOG_LOCAL3
+#ifndef FINGERD_SYSLOG
+# define FINGERD_SYSLOG		LOG_DAEMON /* default syslog facility */
 #endif
 #ifndef	IDENT_TIMEOUT
 # define IDENT_TIMEOUT		30	/* ident timeout */
@@ -45,24 +45,29 @@
 
 #define ACCESS_GRANTED		0x0000	/* acl file missing */
 #define ACCESS_DENIED		0x0001
-#define	ACCESS_NOLIST		0x0002
-#define	ACCESS_NOFORWARD	0x0004
-#define	ACCESS_FORCEIDENT	0x0008
-#define	ACCESS_NOMATCH		0x0010
-#define	ACCESS_FORCESHORT	0x0020
-#define	ACCESS_DEFAULTSHORT	0x0040
-
-#define NO_IDENT_REPLY		"[unknown]"
-#define NO_IDENT_DONE		"[no-ident]"
+#define	ACCESS_FORWARD		0x0002
+#define	ACCESS_NOLIST		0x0004
+#define	ACCESS_NOGECOS		0x0008
+#define	ACCESS_NOHOME		0x0010
+#define	ACCESS_NOMATCH		0x0020
+#define	ACCESS_NOPLAN		0x0040
+#define	ACCESS_FORCEIDENT	0x0080
+#define	ACCESS_FORCESHORT	0x0100
+#define	ACCESS_DEFAULTSHORT	0x0200
+#define	ACCESS_SHOWHOST		0x0400
 
 extern char	version[];
+
+#define NO_IDENT_DONE		"[no-ident]"
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
+#ifndef HAVE_ERR
 void		err __P((const char *, ...));
+#endif
 unsigned long	access_check __P((char *name, char *host));
-long		execute __P((char *program, char **args));
-long		execute_user_cmd __P((char *user, char *ruser, char *rhost));
+int		execute __P((char *program, char **args));
+int		execute_user_cmd __P((char *user, char *ruser, char *rhost));
 char		*get_ident __P((int fd, int timeout));
 __END_DECLS
