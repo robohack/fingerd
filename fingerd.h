@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.9 1999/01/17 02:01:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.10 1999/01/17 04:08:26 woods Exp $"
 
 #ifndef FINGERD_SYSLOG_FACILITY
 # define FINGERD_SYSLOG_FACILITY LOG_DAEMON /* default syslog facility */
@@ -68,10 +68,11 @@ extern char     version[];
 
 __BEGIN_DECLS
 #ifndef HAVE_ERR
-void		err __P((const char *, ...));
+void            err __P((const char *, ...));
 #endif
-unsigned long	access_check __P((char *name, char *host));
-int		execute __P((char *program, char **args));
-int		execute_user_cmd __P((char *user, char *ruser, char *rhost));
-char		*get_ident __P((int fd, int timeout));
+unsigned long   access_check __P((char *name, char *host));
+int             execute __P((char *program, char **args));
+int             execute_user_cmd __P((char *user, char *ruser, char *rhost));
+char           *conf_file_path __P((char *)); 
+char           *get_ident __P((int fd, int timeout));
 __END_DECLS

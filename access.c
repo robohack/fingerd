@@ -30,7 +30,7 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.10 1999/01/17 02:01:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.11 1999/01/17 04:08:25 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -87,7 +87,6 @@ access_check(user, host)
 	char           *line = NULL;
 	char           *cp;
 	char           *tp;
-	char           *pn_acl;
 	unsigned long   ret = ACCESS_GRANTED;
 	int             match = FALSE;
 
@@ -98,9 +97,7 @@ access_check(user, host)
 #endif
 		return ACCESS_DENIED;
 	}
-	if (asprintf(&pn_acl, "%s/fingerd.acl", confdir) < 0)
-		err("asprintf: no memory - %s", strerror(errno));
-	if (!(fp = fopen(pn_acl, "r"))) {
+	if (!(fp = fopen(conf_file_path("fingerd.acl"), "r"))) {
 #ifdef DEBUG
 		if (debug)
 			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));

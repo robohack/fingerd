@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.9 1999/01/17 02:01:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.10 1999/01/17 04:08:26 woods Exp $"
 
 /*
  * misc. routines
@@ -130,6 +130,17 @@ err(fmt, va_alist)
 }
 #endif /* HAVE_ERR */
 
+char *
+conf_file_path(cf)
+	char	*cf;
+{
+	char	*pn;
+
+	if (!(pn = malloc(strlen(cf) + 1 + strlen(confdir))))
+		err("malloc(): %s", strerror(errno));
+	return (strcat(strcat(strcpy(pn, cf), "/"), confdir));
+}
+
 int
 execute(program, args)
 	char	*program;
@@ -170,7 +181,6 @@ execute_user_cmd(name, ruser, rhost)
 	char           *ruser;
 	char           *rhost;
 {
-	char           *pn_users;
 	FILE           *fp;
 	int             ac = 0;
 	char            buf[BUFSIZ];
@@ -183,9 +193,7 @@ execute_user_cmd(name, ruser, rhost)
 		if (!(name = strdup("[userlist]")))
 			err("strdup: no memory - %s", strerror(errno));
 	}
-	if (asprintf(&pn_users, "%s/fingerd.users", confdir) < 0)
-		err("asprintf: no memory - %s", strerror(errno));
-	if ((fp = fopen(pn_users, "r")) == NULL) {
+	if ((fp = fopen(conf_file_path("fingerd.users"), "r")) == NULL) {
 #ifdef DEBUG
 		if (debug)
 			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));

@@ -5,10 +5,10 @@ dnl
 AC_INIT(fingerd.c)
 AC_PREREQ(2.12)dnl Required Autoconf version.
 
-AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.17 1999/01/17 02:01:15 woods Exp $"])dnl
+AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.18 1999/01/17 04:08:25 woods Exp $"])dnl
 
 PACKAGE=fingerd
-VERSION=1.3.95
+VERSION=1.3.96-Preview
 
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
@@ -91,9 +91,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_REPLACE_FUNCS(strdup strerror strtok)
 
-dnl XXX asprintf should be handled with AC_REPLACE_FUNCS but I do not
-dnl have a good portable replacement for it just now....
-AC_CHECK_FUNCS(asprintf inet_ntoa memcpy syslog socket strchr)
+AC_CHECK_FUNCS(inet_ntoa memcpy syslog socket strchr)
 if test $ac_cv_func_inet_ntoa = no; then
 	# inet_ntoa is not in the default libraries.  See if it's in some other.
 	for lib in bsd socket inet nsl; do
