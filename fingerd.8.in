@@ -21,7 +21,7 @@
 .\" all ideas to the authors.  This software will be maintained and
 .\" enhanced as deemed necessary by the community.
 .\"
-.\"#ident	"@(#)$Name:  $:$Id: fingerd.8.in,v 1.6 1999/01/15 19:37:20 woods Exp $"
+.\"#ident	"@(#)$Name:  $:$Id: fingerd.8.in,v 1.7 1999/01/17 01:09:43 woods Exp $"
 .\"
 .Dd January 16, 1999
 .Os NetBSD 1.3I
@@ -33,6 +33,7 @@
 .\"
 .Sh SYNOPSIS
 .Nm
+.Op Fl c confdir
 .Op Fl P finger
 .Op Fl bfglmpru
 .Op Fl h | Fl H
@@ -78,13 +79,18 @@ for that user-name is run.  Otherwise the
 program is run with the appropriate options.
 .\"
 .Sh OPTIONS
-.Bl -tag -width indent
+.Bl -tag -width "-c confdir"
 .It Fl b
 Tell
 .Nm finger
 not to print user's shell and home directory.  (Note that this option
 may not work with all versions of
 .Nm finger . )
+.It Fl c Ar confdir
+Look for configuration files in
+.Dq Ar confdir
+instead of the default directory
+.Pq Pa @PATH_SYSCONFDIR@ .
 .It Fl f
 Allow forwarding of
 .Nm finger
@@ -183,13 +189,13 @@ Queries without a user name are rejected.
 .Nm
 will send the contents of a message file before running the finger
 program.  The path name for the message file is normally
-.Pa /etc/fingerd.motd .
+.Pa @PATH_SYSCONFDIR@/fingerd.motd .
 .\"
 .Ss Access File
 .Nm Fingerd
 enables you to accept and refuse queries depending on the client's
 hostname and/or username.  The path name for the access file is normally
-.Pa /etc/fingerd.acl .
+.Pa @PATH_SYSCONFDIR@/fingerd.acl .
 The format of the file is:
 .Pp
 .Bd -offset indent
@@ -266,7 +272,7 @@ enables you to assign different programs to specific user names.  This
 option is useful for vending machines and other services that use finger
 to report information.  The path name for the \fBusers\fR file is
 normally
-.Pa /etc/fingerd.users .
+.Pa @PATH_SYSCONFDIR@/fingerd.users .
 The format of the file is:
 .Pp
 .Bd -offset indent
@@ -296,12 +302,12 @@ to a command you can prepend it with another
 .Dq Li % .
 .\"
 .Sh FILES
-.Bl -tag -width /etc/fingerd.users -compact
-.It Pa /etc/fingerd.motd
+.Bl -tag -width @PATH_SYSCONFDIR@/fingerd.users -compact
+.It Pa @PATH_SYSCONFDIR@/fingerd.motd
 message file sent prior to reply
-.It Pa /etc/fingerd.acl
+.It Pa @PATH_SYSCONFDIR@/fingerd.acl
 access control list
-.It Pa /etc/fingerd.users
+.It Pa @PATH_SYSCONFDIR@/fingerd.users
 programs to execute when fingered
 .El
 .\"
