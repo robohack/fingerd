@@ -5,7 +5,7 @@
 #
 # NOTE: needs a POSIX /bin/sh to run....
 #
-#ident	"@(#)$Name:  $:$Id: fingerd2netbsd.sh,v 1.2 1999/01/15 20:34:06 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: fingerd2netbsd.sh,v 1.3 1999/01/15 20:36:40 woods Exp $"
 
 PWD=$(/bin/pwd)
 version=$(basename $PWD | sed -e 's/fingerd-//')
@@ -16,7 +16,7 @@ cpsed ()
 	if [ ! -r $1 ] ; then
 		echo "$1: no such file!" 1>&2
 		exit 1
-	if
+	fi
 	# assume that there will only be one #ident line....
 	sed -e '/^#ident/i\
 #ident	"@(#)$\Name$:$\NetBSD$"\
