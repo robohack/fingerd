@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.2 1997/04/07 18:44:00 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.3 1997/04/07 19:03:11 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs
 MAINT_CHARSET = latin1
@@ -14,8 +14,8 @@ EXTRA_DIST = fingerd.txt
 
 sbin_PROGRAMS = fingerd
 
-fingerd_SOURCES = fingerd.h fingerd.c access.c wildcard.c rfc931.c misc.c \
-		pathnames.h version.h version.c
+fingerd_SOURCES = \
+	fingerd.h fingerd.c access.c wildcard.c rfc931.c misc.c version.c
 
 fingerd_LDADD = @LIBOBJS@
 
