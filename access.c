@@ -30,7 +30,7 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.4 1997/04/07 18:44:03 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.5 1997/09/12 19:24:17 woods Exp $"
 
 #include <config.h>
 
@@ -71,6 +71,10 @@ extern char *strchr(), *strrchr(), *strtok();
 
 #include "fingerd.h"
 
+#ifdef DEBUG
+static int debug = 1;
+#endif
+
 unsigned long
 access_check(user, host)
 	char           *user;
@@ -81,36 +85,45 @@ access_check(user, host)
 			*line = NULL,
 			*cp,
 			*tp;
-	unsigned long	ret = ACCESS_DENIED;
+	unsigned long	ret = ACCESS_GRANTED;
 	int		match = FALSE;
 		
 
-	if ((fp = fopen(FINGER_ACL, "r")) == NULL)
+	if (!(fp = fopen(FINGER_ACL, "r"))) {
+#ifdef DEBUG
+		if (debug)
+			printf("fingerd: no host specified.\n");
+#endif
 		return ACCESS_GRANTED;
-	if (host == NULL) {
+	}
+	if (!host) {
 		fclose(fp);
+#ifdef DEBUG
+		if (debug)
+			printf("fingerd: no host specified.\n");
+#endif
 		return ACCESS_DENIED;
 	}
-	while (fgets(buf, sizeof(buf) -1, fp)) {
-		if (buf[0] == NULL || buf[0] == '#')
+	while (fgets(buf, sizeof(buf) - 1, fp)) {
+		if (!buf[0] || buf[0] == '#')
 			continue;
-		if ((cp = strtok(buf, "\r\n")) == NULL)
+		if (!(cp = strtok(buf, "\r\n")))
 			continue;
-		if (line != NULL)
+		if (line)
 			free(line);
-		if ((line = strdup(cp)) == NULL)
+		if (!(line = strdup(cp)))
 			continue;
-		if ((cp = strtok(line, ":\t ")) == NULL)
+		if (!(cp = strtok(line, ":\t ")))
 			continue;
-		if ((tp = strchr(cp, '@')) != NULL) {
-			*tp = NULL;
-			if (wc_comp(cp) != NULL)
+		if ((tp = strchr(cp, '@'))) {
+			*tp = '\0';
+			if (wc_comp(cp))
 				continue;
 			if (!wc_exec(user))
 				continue;
 			cp = ++tp;
 		}
-		if (wc_comp(cp) != NULL)
+		if (wc_comp(cp))
 			continue;
 		if (!wc_exec(host))
 			continue;
@@ -118,36 +131,50 @@ access_check(user, host)
 		break;
 	}
 	fclose(fp);
-	if (!match)
+	if (!match) {			/* Must always have '*' for default */
+#ifdef DEBUG
+		if (debug)
+			printf("fingerd: no match found for %s@%s.\n", user, host);
+#endif
 		return ACCESS_DENIED;
-	ret = ACCESS_DENIED;
-	while ((cp = strtok((char *) 0, ",:\t ")) != NULL) {
+	}
+
+	while ((cp = strtok((char *) NULL, ",:\t "))) {
 		if (strcasecmp(cp, "none") == 0)
 			return ACCESS_DENIED;
 		if (strcasecmp(cp, "all") == 0)
 			return ACCESS_GRANTED;
 		if (strcasecmp(cp, "noforward") == 0) {
-			ret = ret | ACCESS_NOFORWARD;
+			ret |= ACCESS_NOFORWARD;
 			continue;
 		}
 		if (strcasecmp(cp, "nolist") == 0) {
-			ret = ret | ACCESS_NOLIST;
+			ret |= ACCESS_NOLIST;
 			continue;
 		}
 		if (strcasecmp(cp, "forceident") == 0) {
-			ret = ret | ACCESS_FORCEIDENT;
+			ret |= ACCESS_FORCEIDENT;
 			continue;
 		}
 		if (strcasecmp(cp, "nomatch") == 0) {
-			ret = ret | ACCESS_NOMATCH;
+			ret |= ACCESS_NOMATCH;
 			continue;
 		}
+		if (strcasecmp(cp, "forceshort") == 0) {
+			ret |= ACCESS_FORCESHORT;
+			continue;
+		}
+		if (strcasecmp(cp, "defaultshort") == 0) {
+			ret |= ACCESS_DEFAULTSHORT;
+			continue;
+		}
+#ifdef DEBUG
+		if (debug)
+			printf("fingerd: Unrecognized access option: %s.\n", cp);
+#endif
 	}
-	if (line != NULL) free(line);
+	if (line)
+		free(line);
+
 	return ret;
 }
-		
-
-			
-		
-		

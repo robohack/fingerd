@@ -26,13 +26,13 @@
  *
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.4 1997/04/07 18:44:12 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.5 1997/09/12 19:24:57 woods Exp $"
 
 #ifndef FINGER_SYSLOG
 # define FINGER_SYSLOG		LOG_LOCAL3
 #endif
 #ifndef	IDENT_TIMEOUT
-# define IDENT_TIMEOUT		30		/* ident timeout */
+# define IDENT_TIMEOUT		30	/* ident timeout */
 #endif
 
 #ifndef FALSE
@@ -43,12 +43,17 @@
 # define TRUE	1
 #endif
 
-#define ACCESS_DENIED		0x0000
-#define	ACCESS_GRANTED		0x0001
+#define ACCESS_GRANTED		0x0000	/* acl file missing */
+#define ACCESS_DENIED		0x0001
 #define	ACCESS_NOLIST		0x0002
 #define	ACCESS_NOFORWARD	0x0004
 #define	ACCESS_FORCEIDENT	0x0008
 #define	ACCESS_NOMATCH		0x0010
+#define	ACCESS_FORCESHORT	0x0020
+#define	ACCESS_DEFAULTSHORT	0x0040
+
+#define NO_IDENT_REPLY		"[unknown]"
+#define NO_IDENT_DONE		"[no-ident]"
 
 extern char	version[];
 
