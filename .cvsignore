@@ -1,3 +1,4 @@
+INSTALL
 Makefile
 Makefile.in
 aclocal.m4
@@ -10,6 +11,9 @@ configure
 fingerd
 fingerd.8
 fingerd.txt
+install-sh
+missing
+mkinstalldirs
 pathnames.h
 stamp-h
 stamp-h.in
