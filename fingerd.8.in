@@ -1,4 +1,5 @@
 .\" Copyright 1994 Michael Shanzer.  All rights reserved.
+.\" Copyright 1999 Greg A. Woods <woods@planix.com>.  All rights reserved.
 .\"
 .\" Permission is granted to anyone to use this software for any purpose on
 .\" any computer system, and to alter it and redistribute it freely, subject
@@ -17,14 +18,10 @@
 .\" If you make modifications to this software that you feel
 .\" increases it usefulness for the rest of the community, please
 .\" email the changes, enhancements, bug fixes, as well as any and
-.\" all ideas to me.  This software will be maintained and
+.\" all ideas to the authors.  This software will be maintained and
 .\" enhanced as deemed necessary by the community.
 .\"
-.\"              Michael S. Shanzer
-.\"  		shanzer@foobar.com
-.\"
-.\"
-.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.5 1999/01/15 17:59:17 woods Exp $"
+.\"#ident	"@(#)$Name:  $:$Id: fingerd.8.in,v 1.6 1999/01/15 19:37:20 woods Exp $"
 .\"
 .Dd January 16, 1999
 .Os NetBSD 1.3I
