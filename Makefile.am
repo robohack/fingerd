@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.1 1997/04/05 23:45:55 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.2 1997/04/07 18:44:00 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs
 MAINT_CHARSET = latin1
@@ -9,6 +9,8 @@ MAINT_CHARSET = latin1
 SUBDIRS = samples
 
 DIST_OTHER = README.wildcard
+
+EXTRA_DIST = fingerd.txt
 
 sbin_PROGRAMS = fingerd
 
@@ -30,25 +32,6 @@ FLAGS_TO_PASS = \
 ##	local extensions to automake
 ##
 
-# build a version.h file....
-stamp-v: Makefile fingerd.c
-	rm -f t-version.h
-	echo '#define UPDATED "'"`cd $(srcdir) && $(SHELL) mdate-sh fingerd.c`"'"' > t-version.h
-	echo '#define VERSION "$(VERSION)"' >> t-version.h
-	if cmp -s t-version.h version.h; then	\
-	  rm t-version.h;			\
-	else					\
-	  mv t-version.h version.h;		\
-	fi
-	echo timestamp > $@
-
-version.h: stamp-v
-version.o: version.h
-
-MOSTLYCLEANFILES = t-version.h
-
-DISTCLEANFILES = stamp-v version.h
-
 #
 # special rules for safely replacing vendor version with a symlink....
 #
@@ -69,9 +52,32 @@ install-symlink-sbinPROGRAMS:
 	  fi ;								\
 	done
 
+NROFF = nroff
+TROFF = troff
+ROFFDEV = -Tps
+PIC = pic
+TBL = tbl
+SOELIM = soelim
+
+SUFFIXES = .8 .ps .txt
+
+.8.txt:
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -man > $@
+
+.8.ps:
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -man $(ROFFDEV) > $@
+
+#
 # hard-coded dependencies
+#
 
 $(PROGRAMS): Makefile
 
 $(man_MANS): config.status
 
+fingerd.o: fingerd.h config.h
+access.o: fingerd.h config.h
+misc.o: fingerd.h config.h
+rfc931.o: fingerd.h config.h
+wildecard.o: config.h
+version.o: config.h

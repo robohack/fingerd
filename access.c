@@ -30,15 +30,45 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.3 1997/04/05 23:45:59 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.4 1997/04/07 18:44:03 woods Exp $"
+
+#include <config.h>
 
 #include <sys/types.h>
 #include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
+
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#else
+# ifndef errno
+extern int errno;
+# endif /* !errno */
+#endif /* HAVE_ERRNO_H */
+
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+#else
+extern void exit ();
+extern char *getenv();
+#endif
+
 #include <syslog.h>
-#include <unistd.h>
-#include <string.h>
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+# include <string.h>
+#else
+# ifndef HAVE_STRCHR
+#  define strchr index
+#  define strrchr rindex
+# endif
+# include <strings.h>
+extern char *strchr(), *strrchr(), *strtok();
+#endif
+
 #include "fingerd.h"
 
 unsigned long
@@ -46,7 +76,6 @@ access_check(user, host)
 	char           *user;
 	char           *host;
 {
-
 	FILE		*fp;
 	char		buf[BUFSIZ],
 			*line = NULL,

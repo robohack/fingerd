@@ -9,9 +9,7 @@ config.status
 configure
 fingerd
 fingerd.8
-fingerd.man
+fingerd.txt
 pathnames.h
 stamp-h
 stamp-h.in
-stamp-v
-version.h

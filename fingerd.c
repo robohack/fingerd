@@ -30,7 +30,7 @@
  * fingerd main loop
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.3 1997/04/05 23:46:07 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.4 1997/04/07 18:44:10 woods Exp $"
 
 #include <config.h>
 
@@ -45,10 +45,15 @@ extern char *getenv();
 # include <unistd.h>
 #endif
 
-#ifdef HAVE_STRING_H
+#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
 # include <string.h>
 #else
+# ifndef HAVE_STRCHR
+#  define strchr index
+#  define strrchr rindex
+# endif
 # include <strings.h>
+extern char *strchr(), *strrchr(), *strtok();
 #endif
 
 #ifdef HAVE_ERRNO_H
@@ -103,7 +108,7 @@ main(argc, argv)
 	prog = FINGER_PATH;
 	openlog("fingerd", LOG_PID, FINGER_SYSLOG);
 	opterr = 0;
-	while ((ch = getopt(argc, argv, "lp:ufiIsmbr")) != EOF) {
+	while ((ch = getopt(argc, argv, "lp:ufiIsmbrV")) != EOF) {
 		switch (ch) {
 		case 'l':			
 			logging = TRUE;
@@ -135,6 +140,9 @@ main(argc, argv)
 		case 'r':
 			forceresolv = TRUE;
 			break;
+		case 'V':
+			puts(version);
+			exit(0);
 		case '?':
 		default:
 			err("illegal option -- %c", ch);

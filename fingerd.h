@@ -26,20 +26,8 @@
  *
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.3 1997/04/05 23:46:08 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.4 1997/04/07 18:44:12 woods Exp $"
 
-#ifndef	FINGER_PATH
-# define FINGER_PATH		"/usr/ucb/finger"
-#endif
-#ifndef FINGER_MOTD
-# define FINGER_MOTD		"/local/lib/finger/motd"
-#endif
-#ifndef	FINGER_ACL
-# define FINGER_ACL		"/local/lib/finger/access"
-#endif
-#ifndef	FINGER_USERS
-# define FINGER_USERS		"/local/lib/finger/users"
-#endif
 #ifndef FINGER_SYSLOG
 # define FINGER_SYSLOG		LOG_LOCAL3
 #endif
@@ -48,19 +36,21 @@
 #endif
 
 #ifndef FALSE
-#define FALSE	0
+# define FALSE	0
 #endif
 
 #ifndef TRUE
-#define TRUE	1
+# define TRUE	1
 #endif
 
-#define		ACCESS_DENIED		0x0000
-#define		ACCESS_GRANTED		0x0001
-#define		ACCESS_NOLIST		0x0002
-#define		ACCESS_NOFORWARD	0x0004
-#define		ACCESS_FORCEIDENT	0x0008
-#define		ACCESS_NOMATCH		0x0010
+#define ACCESS_DENIED		0x0000
+#define	ACCESS_GRANTED		0x0001
+#define	ACCESS_NOLIST		0x0002
+#define	ACCESS_NOFORWARD	0x0004
+#define	ACCESS_FORCEIDENT	0x0008
+#define	ACCESS_NOMATCH		0x0010
+
+extern char	version[];
 
 #include <sys/cdefs.h>
 

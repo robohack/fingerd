@@ -30,7 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.3 1997/04/05 23:46:19 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.4 1997/04/07 18:44:25 woods Exp $"
 
 #ifndef lint
 static char copyright[] =
@@ -38,7 +38,13 @@ static char copyright[] =
 static char sccsid[] = "@(#)wildcard.c	1.1 (Powerdog) 94/11/08";
 #endif /* not lint */
 
-#include <string.h>
+#include <config.h>
+
+#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+# include <string.h>
+#else
+# include <strings.h>
+#endif
 
 #ifdef REGEX_COMPAT
 #define wc_comp	re_comp

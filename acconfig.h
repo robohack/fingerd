@@ -1,13 +1,24 @@
+#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.2 1997/04/07 18:44:05 woods Exp $"
+
 @TOP@
 
-#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.1 1997/04/05 23:46:01 woods Exp $"
+/* The name of the package. */
+#define PACKAGE "fingerd"
 
-/* these are really just for automake */
-#undef PACKAGE
-#undef VERSION
+/* The package release identifier. */
+#define VERSION	"Pre-release"
 
-/* HAVE_SYSLOG HAVE_SOCKET -- tricks to fool autoheader 2.7 which should
- * supposedly not check for these symbols when there's an AC_CHECK_FUNCS
- */
+/* the fully qualified $sbindir */
+#define FQSBINDIR		"/usr/local/sbin"
 
-/* probably only used in Makefile: syslibexecdir */
+/* path to the finger program */
+#define FINGER_PATH		"/usr/bin/finger"
+
+/* path to the motd file */
+#define FINGER_MOTD		"/usr/local/share/fingerd/motd"
+
+/* path to the acl file */
+#define FINGER_ACL		"/usr/local/share/fingerd/access"
+
+/* path to the users file */
+#define FINGER_USERS		"/usr/local/share/fingerd/users"

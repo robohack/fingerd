@@ -30,15 +30,46 @@
  * misc. routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.3 1997/04/05 23:46:11 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.4 1997/04/07 18:44:15 woods Exp $"
 
-#include	<sys/types.h>
-#include	<errno.h>
-#include	<stdio.h>
-#include	<syslog.h>
-#include	<string.h>
-#include	<unistd.h>
-#include	"fingerd.h"
+#include <config.h>
+
+#include <sys/types.h>
+
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+#else
+extern void exit ();
+extern char *getenv();
+#endif
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+# include <string.h>
+#else
+# ifndef HAVE_STRCHR
+#  define strchr index
+#  define strrchr rindex
+# endif
+# include <strings.h>
+extern char *strchr(), *strrchr(), *strtok();
+#endif
+
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#else
+# ifndef errno
+extern int errno;
+# endif /* !errno */
+#endif /* HAVE_ERRNO_H */
+
+#include <stdio.h>
+#include <syslog.h>
+
+#include "fingerd.h"
 
 /*
  * this should be selected by GNU autoconf....

@@ -24,13 +24,13 @@
 .\"  		shanzer@foobar.com
 .\"
 .\"
-.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.1 1997/04/05 23:46:05 woods Exp $"
+.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.2 1997/04/07 18:44:08 woods Exp $"
 .\"
-.TH FINGERD 8 "1997 April 5" "$Name:  $" "Local Internet Daemons"
+.TH FINGERD 8 "1997 April 6" "$Name:  $" "Local Internet Daemons"
 .SH NAME
 fingerd \- remote user information server
 .SH SYNOPSIS
-\fB@sbindir@/fingerd\fR [\fB-p progname\fR] [\fB-lufiIsmb\fR]
+\fB@FQSBINDIR@/fingerd\fR [\fB-p progname\fR] [\fB-lufiIsmb\fR]
 .SH DESCRIPTION
 \fBfingerd\fR implements the server side of the the Name/Finger protocol,
 specified in \s-2RFC\s0 1288.  The Name/Finger protocol provides a remote
@@ -76,10 +76,14 @@ is run with the appropriate options and the requested user-name.
 \fB\-b\fR Tells finger not to print user's shell and home directory.
 .TP
 \fB\-p progname\fR Use \fIprogname\fR as the finger program.
+.SH "MESSAGE FILE"
+\fBfingerd\fR will send the contents of a message file before running the
+finger program.  The path name for the message file is normally
+\fI@FINGER_MOTD@\fR.
 .SH "ACCESS FILE"
 \fBfingerd\fR enables you to accept and refuse queries depending on the
 client's hostname and/or username.  The path name for the access file is
-normally \fI@datadir@/@PACKAGE@/access\fR.
+normally \fI@FINGER_ACL@\fR.
 The format of the file is:
 .IP
 \fIuser-name@host-name	permission\fR
@@ -107,7 +111,7 @@ Command line options take precedence over the access file.
 \fBfingerd\fR enables you to assign different programs to specific user
 names.  This option is useful for vending machines and other services that
 use finger to report information.  The path name for the \fBusers\fR file
-is normally \fI@datadir@/@PACKAGE@/users\fR.
+is normally \fI@FINGER_USERS@\fR.
 The format of the file is:
 .IP
 \fIuser-name	program [args]\fR
@@ -149,6 +153,7 @@ directly control.
 .SH AUTHOR
 This program was written by Mike Shanzer (shanzer@foobar.com) all comments
 and suggestions are welcome!
+.\" See also the THANKS file when updating this list....
 .sp
 Thanks to Kevin Ruddy (smiles@powerdog.com) for the wildcard library.
 .sp

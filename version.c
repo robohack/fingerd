@@ -1,5 +1,4 @@
-#ident	"@(#)fingerd:$Name:  $:$Id: version.c,v 1.1 1997/04/05 23:46:18 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: version.c,v 1.2 1997/04/07 18:44:23 woods Exp $"
 
-#include "version.h"
+#include <config.h>
 char version[] = VERSION;
-char updated[] = UPDATED;
