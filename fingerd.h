@@ -26,6 +26,8 @@
  *
  */
 
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.3 1997/04/05 23:46:08 woods Exp $"
+
 #ifndef	FINGER_PATH
 # define FINGER_PATH		"/usr/ucb/finger"
 #endif

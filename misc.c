@@ -30,10 +30,7 @@
  * misc. routines
  */
  
-
-#ifndef lint
-static char rcsid[] = "$Id: misc.c,v 1.2 1995/08/11 21:25:24 woods Exp $";
-#endif /* not lint */
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.3 1997/04/05 23:46:11 woods Exp $"
 
 #include	<sys/types.h>
 #include	<errno.h>
@@ -68,7 +65,7 @@ static char rcsid[] = "$Id: misc.c,v 1.2 1995/08/11 21:25:24 woods Exp $";
 #endif
 
 /* VARARGS */
-#if defined(HAVE_VFPRINTF) && ((__STDC__ - 0) > 0)
+#if defined(HAVE_VPRINTF) && ((__STDC__ - 0) > 0)
 void
 err(const char *fmt, ...)
 #else
@@ -84,7 +81,7 @@ err(fmt, va_alist)
 #endif
 
 #ifdef HAVE_VPRINTF
-	VA_START(ap, message);
+	VA_START(ap, fmt);
 	(void) vsprintf(buf, fmt, ap);
 	va_end(ap);
 #else

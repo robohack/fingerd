@@ -1,0 +1,6 @@
+#ident	"@(#)fingerd:$Name:  $:$Id: pathnames.h.in,v 1.1 1997/04/05 23:46:13 woods Exp $"
+
+#define FINGER_PATH		"@FINGER_PATH@"
+#define FINGER_MOTD		"@datadir@/@PACKAGE@/motd"
+#define FINGER_ACL		"@datadir@/@PACKAGE@/access"
+#define FINGER_USERS		"@datadir@/@PACKAGE@/users"

@@ -30,9 +30,7 @@
  * fingerd access check routines
  */
  
-#ifndef lint
-static char rcsid[] = "$Id: access.c,v 1.2 1995/08/11 21:25:18 woods Exp $";
-#endif /* not lint */
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.3 1997/04/05 23:45:59 woods Exp $"
 
 #include <sys/types.h>
 #include <stdio.h>

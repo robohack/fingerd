@@ -1,0 +1,161 @@
+.\" Copyright 1994 Michael Shanzer.  All rights reserved.
+.\"
+.\" Permission is granted to anyone to use this software for any purpose on
+.\" any computer system, and to alter it and redistribute it freely, subject
+.\" to the following restrictions:
+.\"
+.\" Use of this software constitutes acceptance for use in an AS IS
+.\" condition.  There are NO warranties with regard to this software.
+.\" In no event shall the author be liable for any damages whatsoever
+.\" arising out of or in connection with the use or performance of this
+.\" software.  Any use of this software is at the user's own risk.
+.\"
+.\" The origin of this software must not be misrepresented, either by
+.\" explicit claim or by omission.  Since few users ever read sources,
+.\" credits must also appear in the documentation.
+.\"
+.\" If you make modifications to this software that you feel
+.\" increases it usefulness for the rest of the community, please
+.\" email the changes, enhancements, bug fixes, as well as any and
+.\" all ideas to me.  This software will be maintained and
+.\" enhanced as deemed necessary by the community.
+.\"
+.\"              Michael S. Shanzer
+.\"  		shanzer@foobar.com
+.\"
+.\"
+.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.1 1997/04/05 23:46:05 woods Exp $"
+.\"
+.TH FINGERD 8 "1997 April 5" "$Name:  $" "Local Internet Daemons"
+.SH NAME
+fingerd \- remote user information server
+.SH SYNOPSIS
+\fB@sbindir@/fingerd\fR [\fB-p progname\fR] [\fB-lufiIsmb\fR]
+.SH DESCRIPTION
+\fBfingerd\fR implements the server side of the the Name/Finger protocol,
+specified in \s-2RFC\s0 1288.  The Name/Finger protocol provides a remote
+interface to programs which display information on system status and
+individual users.  The protocol imposes little structure on the format of the
+exchange between client and server.  The client provides a single
+\*(lqcommand line\*(rq to the finger server which returns a printable reply.
+.LP
+\fBfingerd\fR is normally run by
+.BR inetd (8),
+and waits for connections on port 79.  Once connected it reads a single
+command line terminated by a \s-1LINEFEED\s0.  If the command line is empty,
+it checks the access file (see below) to see if user listings from
+the originating host & user are permitted.  If user listings are allowed,
+fingerd executes
+.BR finger (1)
+with the appropriate options.
+.LP
+If the command line contains a user name fingerd checks the \fBusers\fR file
+(see below) to see if the user-name is listed.  If the requested user name is
+listed in the config file, the program listed in the user's file is run with
+the arguments specified.  Otherwise
+.BR finger (1)
+is run with the appropriate options and the requested user-name.
+.SH OPTIONS
+.TP
+\fB\-l\fR Log all accepted and refused finger requests.
+.TP
+\fB\-u\fR Do not allow user listings.
+.TP
+\fB\-f\fR Do not forward finger requests.
+.TP
+\fB\-i\fR Attempt \s-2RFC\s0 1413 compliant ident queries.
+.TP
+\fB\-I\fR Same as \fB\-i\fR but reject the connection if the query fails.
+.TP
+\fB\-r\fR Refuse connections if can not resolve hostname.
+.TP
+\fB\-s\fR Tells finger to do a short listings by default.
+.TP
+\fB\-m\fR Tells finger to do only exact matches.
+.TP
+\fB\-b\fR Tells finger not to print user's shell and home directory.
+.TP
+\fB\-p progname\fR Use \fIprogname\fR as the finger program.
+.SH "ACCESS FILE"
+\fBfingerd\fR enables you to accept and refuse queries depending on the
+client's hostname and/or username.  The path name for the access file is
+normally \fI@datadir@/@PACKAGE@/access\fR.
+The format of the file is:
+.IP
+\fIuser-name@host-name	permission\fR
+.LP
+\fBfingerd attempts to match the remote user's name and the remote host's name
+with what is in the access file.  If a match is found, \fBpermission\fR
+is used to process the request.  Both the \fBuser-name\fR and the
+\fBhostname\fR can either be literal strings or wildcards.  The first line to
+match the request is the one used.
+.LP
+\fBpermission\fR must be one of the following:
+.TP
+\fInone\fR \- deny all access.
+.TP
+\fInoforward\fR \- do not forward finger requests.
+.TP
+\fInolist\fR \- disallow user lists.
+.TP
+\fIforceident\fR \- fail if ident queries fail.
+.TP
+\fIall\fR \- grant default access.
+.LP
+Command line options take precedence over the access file.
+.SH "USERS FILE"
+\fBfingerd\fR enables you to assign different programs to specific user
+names.  This option is useful for vending machines and other services that
+use finger to report information.  The path name for the \fBusers\fR file
+is normally \fI@datadir@/@PACKAGE@/users\fR.
+The format of the file is:
+.IP
+\fIuser-name	program [args]\fR
+.LP
+\fBuser-name\fR is the user-name to match against.  This must be a literal
+match; wildcards are not accepted.
+\fBprogram [args]\fR is the full pathname of the program to run and the
+arguments you wish to give it.  If you specify
+\fI%U\fR as an argument it will get replaced with the remote user's
+name.  If you specify \fI%H\fR it will get replaced with the remote
+host's name.  To pass in a literal \fI%U\fR or \fI%H\fR prepend it with
+another \fI%\fR.
+.SH "SEE ALSO"
+.BR finger (1)
+.LP
+Zimmerman, David,
+The Finger User Information Protocol,
+\s-2RFC\s0 1288,
+Center for Discrete Mathematics and Theoretical Computer Science,
+Rutgers University,
+December 1990.
+.SH BUGS
+The handling %H and %U in the user file is pretty primative and broken.
+.sp
+On some systems (at least SunOS 4.1.3) inetd only passes 4 command line
+options to the daemon it runs, so you should condense command line options.
+.br
+So instead of saying:
+.RS
+.B "fingerd -f -s -l -u"
+.RE
+say
+.br
+.RS
+.B "fingerd -fslu"
+.RE
+Trusting \fBidentd\fR is a silly thing to do, esp. for hosts you don't
+directly control.
+.SH AUTHOR
+This program was written by Mike Shanzer (shanzer@foobar.com) all comments
+and suggestions are welcome!
+.sp
+Thanks to Kevin Ruddy (smiles@powerdog.com) for the wildcard library.
+.sp
+Thanks to Kelly DeYoe (kelly@nine.org) for the patches (the nomatch code)
+and sugestions.
+.sp
+Thanks to Wietse Venema (wietse@wzv.win.tue.nl) for the rfc931 code.
+.sp
+And thanks to Christine Flemming (jones@csh.rit.edu) for helping with this man
+page.

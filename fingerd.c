@@ -30,21 +30,42 @@
  * fingerd main loop
  */
  
-#ifndef lint
-static char rcsid[] = "$Id: fingerd.c,v 1.2 1995/08/11 21:25:21 woods Exp $";
-#endif /* not lint */
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.3 1997/04/05 23:46:07 woods Exp $"
+
+#include <config.h>
+
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+#else
+extern void exit ();
+extern char *getenv();
+#endif
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# include <strings.h>
+#endif
+
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#else
+# ifndef errno
+extern int errno;
+# endif /* !errno */
+#endif /* HAVE_ERRNO_H */
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
-#include <unistd.h>
 #include <syslog.h>
 #include <netdb.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "fingerd.h"
 
@@ -138,9 +159,12 @@ main(argc, argv)
 				syslog(LOG_NOTICE,
 				       "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
 				       rhost, rhost, inet_ntoa(sin.sin_addr));
-				puts("Cannot resolve hostname");
+				printf("Sorry, I cannot resolve the hostname for your address '%s' (%s).",
+				       rhost, inet_ntoa(sin.sin_addr));
 				exit(1);
-			} else rhost = strdup(inet_ntoa(sin.sin_addr));
+				/* NOTREACHED */
+			}
+			rhost = strdup(inet_ntoa(sin.sin_addr));
 		} else {
 			struct	in_addr *i;
 			int match = FALSE;
@@ -154,10 +178,11 @@ main(argc, argv)
 			if (!match) {
 				syslog(LOG_NOTICE,
 				       "from=[unknown]@%s to=[unknown] stat=Address %s does not resolve to %s (%s).",
-				       rhost, inet_ntoa(sin.sin_addr), hp->h_name);
-				printf("Name server mis-configuration.  You are not really on %s is not %s.\n",
+				       rhost, inet_ntoa(sin.sin_addr), rhost, hp->h_name);
+				printf("Name server mis-configuration.  You are really on %s.  It is not %s.\n",
 				       inet_ntoa(sin.sin_addr), hp->h_name);
 				exit(1);
+				/* NOTREACHED */
 			}
 		}
 
@@ -165,8 +190,10 @@ main(argc, argv)
 		if (forceresolv) {
 			syslog(LOG_NOTICE, "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
 			       rhost, rhost, inet_ntoa(sin.sin_addr));
-			puts("Cannot resolve hostname");
+			printf("Sorry, I cannot resolve the hostname for your address '%s' (%s).",
+			       rhost, inet_ntoa(sin.sin_addr));
 			exit(1);
+			/* NOTREACHED */
 		}
 		rhost = strdup(inet_ntoa(sin.sin_addr));
 	}
@@ -176,8 +203,10 @@ main(argc, argv)
 	else
 		ruser = strdup("[unknown]");
 	perm = access_check(ruser, rhost);
-	if (!fgets(line, sizeof(line), stdin))
+	if (!fgets(line, sizeof(line), stdin)) {
 		exit(1);
+		/* NOTREACHED */
+	}
 	ap = strtok(line, "\r\n");
 	if (perm & ACCESS_NOLIST)
 		secure = TRUE;
@@ -192,9 +221,10 @@ main(argc, argv)
 			if(logging)
 				syslog(LOG_NOTICE,
 				       "from=%s@%s to=%s stat=No ident server",
-				       ruser,rhost, (ap ? ap : "[user list]"));
-			puts("Access denied, no ident server.");
+				       ruser, rhost, (ap ? ap : "[user list]"));
+			puts("Access denied, no ident reply.");
 			exit(1);
+			/* NOTREACHED */
 		}
 	}
 	if (perm == ACCESS_DENIED) {
@@ -202,18 +232,20 @@ main(argc, argv)
 			syslog(LOG_NOTICE,
 			       "from=%s@%s to=%s stat=Refused",
 			       ruser, rhost, (ap ? ap : "[user list]"));
-		puts("Access denied");
+		puts("Access denied.");
 		exit(1);
+		/* NOTREACHED */
 	}
-	if (ap == (char *) 0) {
+	if ((ap && !*ap) || (!ap && secure)) {
 		if (secure) {
 			if (logging)
 				syslog(LOG_NOTICE,
 				       "from=%s@%s to=%s stat=Refused",
 				       ruser, rhost, "[user list]");
-			puts("Must provide username");
+			puts("User list denied.");
 			exit(1);
-		} 
+			/* NOTREACHED */
+		}
 	} else {
 		lp = ap;
 		ap = strtok(lp, " ");
@@ -227,17 +259,10 @@ main(argc, argv)
 				syslog(LOG_NOTICE,
 				       "from=%s@%s to=%s stat=Refused Forwarding",
 				       ruser, rhost, ap);
-			puts("Fowarding service denied\r\n");
+			puts("Fowarding service denied.");
 			exit(1);
+			/* NOTREACHED */
 		}
-	}
-	if (ap == NULL && secure) {
-		if (logging)
-			syslog(LOG_NOTICE,
-			       "from=%s@%s to=%s stat=Refused",
-			       ruser, rhost, "[user list]");
-		puts("Must provide username");
-		exit(1);
 	}
 	if (logging)
 		syslog(LOG_NOTICE, "from=%s@%s to=%s stat=OK",
@@ -249,9 +274,10 @@ main(argc, argv)
 		puts("----");
 		fclose(fp);
 	}
-	if (execute_user_cmd(ap, ruser, rhost))
+	if (execute_user_cmd(ap, ruser, rhost)) {
 		exit(0);
-	else {
+		/* NOTREACHED */
+	} else {
 		if (ap)
 			av[ac++] = strdup(ap);
 	}
@@ -263,8 +289,5 @@ main(argc, argv)
 	if (!execute(prog, av))
 		err("execute: %s", strerror(errno));
 	exit(0);
+	/* NOTREACHED */
 }
-
-
-
-

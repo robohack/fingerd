@@ -30,6 +30,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.3 1997/04/05 23:46:19 woods Exp $"
+
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright (c) 1994 Powerdog Industries.  All rights reserved.";

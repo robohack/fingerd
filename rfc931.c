@@ -9,11 +9,11 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
+#ident	"@(#)fingerd:$Name:  $:$Id: rfc931.c,v 1.2 1997/04/05 23:46:14 woods Exp $"
+
 #ifndef lint
 static char sccsid[] = "@(#) rfc931.c 1.8 93/12/13 22:23:20";
-static char rcsid[] = "$Id: rfc931.c,v 1.1 1995/08/09 18:35:21 woods Exp $";
 #endif
-
 
 
 /* System libraries. */

@@ -1,0 +1,99 @@
+dnl
+dnl Process this file with autoconf to produce a configure script.
+dnl
+#ident	"@(#)fingerd:$Name:  $:$Id: configure.in,v 1.1 1997/04/05 23:46:02 woods Exp $"
+
+AC_INIT(fingerd.c)
+
+PACKAGE=fingerd
+VERSION=1.3.80
+
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+AC_PREREQ(2.12)dnl Required Autoconf version.
+
+AM_SANITY_CHECK
+
+AC_ARG_PROGRAM
+
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CC
+AC_LANG_C
+
+AC_PROG_MAKE_SET
+
+AM_PROG_INSTALL
+AC_PROG_LN_S
+
+missing_dir=`cd $ac_aux_dir && pwd`
+AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
+AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
+AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
+AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
+AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
+
+AC_PATH_PROG(FINGER_PATH, finger, , $PATH:/usr/local/bin:/usr/ucb:/usr/bsd:/usr/new)
+if test -z "$FINGER_PATH" ; then
+	AC_MSG_ERROR(the finger program cannot be found)
+fi
+AC_PATH_PROG(FINGERD_PATH, fingerd, , /usr/etc:/etc:/usr/libexec)
+if test -n "$FINGERD_PATH" ; then
+	syslibexecdir=`dirname $FINGERD_PATH`
+fi
+AC_PATH_PROG(INFINGERD_PATH, in.fingerd, , /usr/etc:/etc:/usr/libexec)
+if test -n "$INFINGERD_PATH" ; then
+	syslibexecdir=`dirname $INFINGERD_PATH`
+fi
+AC_MSG_CHECKING(path to system daemons)
+if test -z "$syslibexecdir" ; then
+	AC_MSG_WARN(cannot find original system fingerd)
+	syslibexecdir=NO_EXEC_DIR	
+else
+	AC_MSG_RESULT($syslibexecdir)
+fi
+AC_SUBST(syslibexecdir)
+
+dnl Try to get a POSIX.1 environment.
+dnl we need to call these system-specific macros early...
+AC_AIX
+AC_MINIX
+AC_ISC_POSIX
+
+dnl Checks for libraries.
+AC_CHECK_LIB(sun, getpwnam)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(errno.h unistd.h string.h memory.h syslog.h \
+sys/types.h sys/socket.h netinet/in.h arpa/inet.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+dnl Checks for library functions.
+AC_TYPE_SIGNAL
+AC_FUNC_VFORK
+AC_FUNC_VPRINTF
+AC_REPLACE_FUNCS(strerror)
+
+AC_CHECK_FUNCS(syslog socket strdup)
+if test $ac_cv_func_syslog = no; then
+	# syslog is not in the default libraries.  See if it's in some other.
+	for lib in bsd socket inet nsl; do
+		AC_CHECK_LIB($lib, syslog, [AC_DEFINE(HAVE_SYSLOG)
+		LIBS="$LIBS $lib"; break])
+	done
+fi
+if test $ac_cv_func_socket = no; then
+	# socket is not in the default libraries.  See if it's in some other.
+	for lib in bsd socket inet nsl; do
+		AC_CHECK_LIB($lib, socket, [AC_DEFINE(HAVE_SOCKET)
+		LIBS="$LIBS $lib"; break])
+	done
+fi
+
+AC_OUTPUT([Makefile fingerd.8 pathnames.h samples/Makefile])

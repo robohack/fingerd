@@ -1,0 +1,7 @@
+This file is effectively empty on purpose.  It exists merely to satisfy
+automake, and as a pointer to the real code change documentation.
+
+If you want to see all the code change comments, please use the
+annonymous CVS server access at robohack.planix.com.
+
+#ident	"@(#)fingerd:$Name:  $:$Id: ChangeLog,v 1.1 1997/04/05 23:45:52 woods Exp $"
