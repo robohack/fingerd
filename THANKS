@@ -5,7 +5,8 @@ code) and sugestions.
 
 Thanks to Wietse Venema <wietse@wzv.win.tue.nl> for the rfc931 code.
 
-And thanks to Christine Flemming <jones@csh.rit.edu> for helping with
-this man page.
+Thanks to Christine Flemming <jones@csh.rit.edu> for helping with the
+manual page.
 
-GNU Autoconfiscation was done by Greg A. Woods <woods@planix.com>.
+GNU Autoconfiscation and a major overhaul was done by Greg A. Woods
+<woods@planix.com>.
