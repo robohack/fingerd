@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.13 2000/12/02 17:43:47 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.14 2000/12/02 18:10:02 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnu no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -25,7 +25,7 @@ INCLUDES = -I.
 # things that exist in the repository
 DIST_OTHER = \
 	README.developers ToDo \
-	README.wildcard fingerd.txt
+	README.wildcard
 
 # things that must be made during 'make dist'
 DIST_MAKE = $(catman_MANS) $(psman_MANS) Makefile.BSD-dist
