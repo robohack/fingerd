@@ -3,13 +3,11 @@
 #
 # Copyright (C) 1999 Planix, Inc. - All rights reserved.
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.3 1999/01/17 02:01:14 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.4 1999/01/17 02:10:56 woods Exp $"
 
 # adjust these as desired:
-CPPFLAGS+= -DFINGER_PATH=\"/usr/bin/finger\"
-CPPFLAGS+= -DFINGERD_MOTD=\"/etc/fingerd.motd\"
-CPPFLAGS+= -DFINGERD_ACL=\"/etc/fingerd.acl\"
-CPPFLAGS+= -DFINGERD_USERS=\"/etc/fingerd.users\"
+CPPFLAGS+= -DPATH_FINGER=\"/usr/bin/finger\"
+CPPFLAGS+= -DPATH_SYSCONFDIR=\"/etc\"
 
 BINDIR?= /usr/libexec
 
