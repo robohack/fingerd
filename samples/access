@@ -1,29 +1,40 @@
 #
-# fingerd access control list
+#	fingerd access control list
 #
-#	noforward -- do not allow forwarded fingers 
-#	forceident -- reject if remote host not running identd
-#	nolist -- do not allow listing of users logged in
-#	nomatch -- do not match on first&last names (finger -m)
-#	none -- access denied 
+#ident	"@(#)$Name:  $:$Id: access,v 1.3 1999/01/15 19:52:31 woods Exp $"
 #
-# The first line that matches is the the line that'll apply.
-# There is no default -- use '*' to match any host or user.
+#    none          deny all access.
+#    forward       allow forwarding of finger requests (same as -f).
+#    nogecos       do not show GECOS information (same as -g).
+#    nohome        do not show user's home directory location (same as -b).
+#                  (Note that this option may not work with all versions of
+#                  finger.)
+#    nolist        disallow user lists (same as -u).
+#    nomatch       do not match on fullname (same as -m).
+#    noplan        do not show user's ~/.plan, etc. files (same as -p).
+#    forceident    fail if ident queries fail (same as -I).
+#    forceshort    force short reply only (same as -S).
+#    defaultshort  default to short reply (same as -s).
+#    showhost      show user's remote host instead of office information
+#                  (same as -h).
+# 
+# The first line that matches is the the line that'll apply.  There is
+# no default -- use '*' to match any host or user.
+# 
+# Command line options set the defaults, so for example if you enable
+# forwarding by specifying `-f' on the fingerd command line then you
+# do not need to put `forward' in here cause it applies to all
+# connections.  Note that the `forceident' always fails if fingerd was
+# not invoked with either `-i' or `-I'.
 #
-# Command line options take precedence to what is in the file,
-# so for example if you specify '-f' on the fingerd command line
-# you do not neet to put noforward in here cause it applies to all
-# connections.  The 'forceident' always fails if fingerd was not
-# invoked with either '-i' or '-I'.
+#*@*.foobar.com:	forceident
+#*@nick.csh.rit.edu:	forward
+#*@*.powerdog.com:	forward
+#*: 			nolist
 #
-#*@*.foobar.com:	noforward, forceident
-#*@nick.csh.rit.edu:	noforward
-#*@*.powerdog.com:	noforward
-#*: 			nolist,noforward
-
-woods@very.weird.com:	noforward, forceident, nomatch
-*.weird.com:		forceident
-*.planix.com:		noforward,forceident
-*.dancing.org:		noforward
-*.passport.ca:		noforward
-*:			noforward,nolist,nomatch
+#woods@very.weird.com:	forceident, nomatch
+#*.weird.com:		forward,forceident
+#*.planix.com:		forward,forceident
+#*.dancing.org:		forward
+#*.passport.ca:		forward
+#*:			nolist,nomatch
