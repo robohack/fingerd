@@ -26,12 +26,24 @@
  *
  */
 
-#define	FINGER_PATH		"/usr/ucb/finger"
-#define FINGER_MOTD		"/usr/local/lib/finger/motd"
-#define	FINGER_ACL		"/usr/local/lib/finger/access"
-#define	FINGER_USERS		"/usr/local/lib/finger/users"
-#define FINGER_SYSLOG		LOG_LOCAL3
-#define	IDENT_TIMEOUT		30		/* ident timeout */
+#ifndef	FINGER_PATH
+# define FINGER_PATH		"/usr/ucb/finger"
+#endif
+#ifndef FINGER_MOTD
+# define FINGER_MOTD		"/local/lib/finger/motd"
+#endif
+#ifndef	FINGER_ACL
+# define FINGER_ACL		"/local/lib/finger/access"
+#endif
+#ifndef	FINGER_USERS
+# define FINGER_USERS		"/local/lib/finger/users"
+#endif
+#ifndef FINGER_SYSLOG
+# define FINGER_SYSLOG		LOG_LOCAL3
+#endif
+#ifndef	IDENT_TIMEOUT
+# define IDENT_TIMEOUT		30		/* ident timeout */
+#endif
 
 #ifndef FALSE
 #define FALSE	0
@@ -48,8 +60,12 @@
 #define		ACCESS_FORCEIDENT	0x0008
 #define		ACCESS_NOMATCH		0x0010
 
-void		err(const char *, ...);
-unsigned long	access_check(char *name, char *host);
-long		execute(char *program, char **args);
-long		execute_user_cmd(char *user, char *ruser, char *rhost);
-char		*get_ident(int fd, int timeout);
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+void		err __P((const char *, ...));
+unsigned long	access_check __P((char *name, char *host));
+long		execute __P((char *program, char **args));
+long		execute_user_cmd __P((char *user, char *ruser, char *rhost));
+char		*get_ident __P((int fd, int timeout));
+__END_DECLS
