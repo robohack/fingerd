@@ -1,4 +1,4 @@
-#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.3 1997/09/15 00:39:04 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.4 1999/01/15 18:09:56 woods Exp $"
 
 @TOP@
 
@@ -12,10 +12,10 @@
 #define FINGER_PATH		"/usr/bin/finger"
 
 /* path to the motd file */
-#define FINGER_MOTD		"/usr/local/share/fingerd/motd"
+#define FINGERD_MOTD		"/usr/local/share/fingerd/motd"
 
 /* path to the acl file */
-#define FINGER_ACL		"/usr/local/share/fingerd/access"
+#define FINGERD_ACL		"/usr/local/share/fingerd/access"
 
 /* path to the users file */
-#define FINGER_USERS		"/usr/local/share/fingerd/users"
+#define FINGERD_USERS		"/usr/local/share/fingerd/users"
