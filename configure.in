@@ -1,7 +1,7 @@
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.2 1997/04/05 23:57:03 woods Exp $"
+dnl#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.3 1997/04/06 01:35:03 woods Exp $"
 
 AC_INIT(fingerd.c)
 
@@ -70,6 +70,14 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h unistd.h string.h memory.h syslog.h \
 sys/types.h sys/socket.h netinet/in.h arpa/inet.h)
+
+AC_MSG_CHECKING(for <sys/cdefs.h>)
+AC_TRY_CPP([<sys/cdefs.h>], fd_cv_have_sys_cdefs_h=yes, fd_cv_have_sys_cdefs_h=no)
+AC_MSG_RESULT($fd_cv_have_sys_cdefs_h)
+if test $fd_cv_have_sys_cdefs_h = no ; then
+	# ideally this would be '-I$(srcdir)/compat'
+	CPPFLAGS="-Icompat $CPPFLAGS"
+fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
