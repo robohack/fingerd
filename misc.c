@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: misc.c,v 1.7 1999/01/15 19:39:01 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: misc.c,v 1.8 1999/01/17 01:20:52 woods Exp $"
 
 /*
  * misc. routines
@@ -166,24 +166,32 @@ execute(program, args)
 
 int
 execute_user_cmd(name, ruser, rhost)
-	char	*name;
-	char	*ruser;
-	char	*rhost;
+	char           *name;
+	char           *ruser;
+	char           *rhost;
 {
+	char           *pn_users;
+	FILE           *fp;
+	int             ac = 0;
+	char            buf[BUFSIZ];
+	char           *cp;
+	char           *prog;
+	char           *line = NULL;
+	char           *av[BUFSIZ];
 
-	FILE	*fp;
-	int	ac = 0;
-	char	buf[BUFSIZ],
-		*cp,
-		*prog,
-		*line = NULL,
-		*av[BUFSIZ];
-	
-
-	if (name == NULL)
-		name = strdup("[userlist]");
-	if ((fp = fopen(FINGERD_USERS, "r")) == NULL)
+	if (name == NULL) {
+		if (!(name = strdup("[userlist]")))
+			err("strdup: no memory - %s", strerror(errno));
+	}
+	if (asprintf(&pn_users, "%s/fingerd.users", confdir) < 0)
+		err("asprintf: no memory - %s", strerror(errno));
+	if ((fp = fopen(pn_users, "r")) == NULL) {
+#ifdef DEBUG
+		if (debug)
+			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));
+#endif
 		return 0;
+	}
 	while (fgets(buf, sizeof(buf) -1, fp)) {
 		if (buf[0] == NULL || buf[0] == '#') /* ignore comments */
 			continue;

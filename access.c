@@ -30,7 +30,7 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)$Name:  $:$Id: access.c,v 1.8 1999/01/15 19:51:41 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: access.c,v 1.9 1999/01/17 01:20:52 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -82,29 +82,30 @@ access_check(user, host)
 	char           *user;
 	char           *host;
 {
-	FILE		*fp;
-	char		buf[BUFSIZ],
-			*line = NULL,
-			*cp,
-			*tp;
-	unsigned long	ret = ACCESS_GRANTED;
-	int		match = FALSE;
-		
+	FILE           *fp;
+	char            buf[BUFSIZ];
+	char           *line = NULL;
+	char           *cp;
+	char           *tp;
+	char           *pn_acl;
+	unsigned long   ret = ACCESS_GRANTED;
+	int             match = FALSE;
 
-	if (!(fp = fopen(FINGERD_ACL, "r"))) {
-#ifdef DEBUG
-		if (debug)
-			printf("fingerd: no host specified.\n");
-#endif
-		return ACCESS_GRANTED;
-	}
 	if (!host) {
-		fclose(fp);
 #ifdef DEBUG
 		if (debug)
-			printf("fingerd: no host specified.\n");
+			fprintf(stderr, "%s: access_check(): no host specified.\n", argv0);
 #endif
 		return ACCESS_DENIED;
+	}
+	if (asprintf(&pn_acl, "%s/fingerd.acl", confdir) < 0)
+		err("asprintf: no memory - %s", strerror(errno));
+	if (!(fp = fopen(pn_acl, "r"))) {
+#ifdef DEBUG
+		if (debug)
+			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));
+#endif
+		return ACCESS_GRANTED;
 	}
 	while (fgets(buf, sizeof(buf) - 1, fp)) {
 		if (!buf[0] || buf[0] == '#')
@@ -113,8 +114,13 @@ access_check(user, host)
 			continue;
 		if (line)
 			free(line);
-		if (!(line = strdup(cp)))
-			continue;
+		if (!(line = strdup(cp))) {
+#ifdef DEBUG
+			if (debug)
+				fprintf(stderr, "%s: strdup(%s) failed: %s.\n", argv0, cp, strerror(errno));
+#endif
+			continue;	/* XXX maybe the next line will be shorter? */
+		}
 		if (!(cp = strtok(line, ":\t ")))
 			continue;
 		if ((tp = strchr(cp, '@'))) {
@@ -132,11 +138,11 @@ access_check(user, host)
 		match = TRUE;
 		break;
 	}
-	fclose(fp);
+	(void) fclose(fp);
 	if (!match) {			/* Must always have '*' for default */
 #ifdef DEBUG
 		if (debug)
-			printf("fingerd: no match found for %s@%s.\n", user, host);
+			fprintf(stderr, "%s: no match found for %s@%s.\n", argv0, user, host);
 #endif
 		return ACCESS_DENIED;
 	}
@@ -188,7 +194,7 @@ access_check(user, host)
 		}
 #ifdef DEBUG
 		if (debug)
-			printf("fingerd: Unrecognized access option: %s.\n", cp);
+			fprintf(stderr, "%s: Unrecognized access option: %s.\n", argv0, cp);
 #endif
 	}
 	if (line)
