@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.12 2000/12/02 17:35:05 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.13 2000/12/02 17:43:47 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnu no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -18,6 +18,7 @@ fingerd_LDADD = @LIBOBJS@
 
 man_MANS = fingerd.8
 catman_MANS = fingerd.cat8
+psman_MANS = fingerd.ps8
 
 INCLUDES = -I.
 
@@ -27,7 +28,7 @@ DIST_OTHER = \
 	README.wildcard fingerd.txt
 
 # things that must be made during 'make dist'
-DIST_MAKE = $(catman_MANS) Makefile.BSD-dist
+DIST_MAKE = $(catman_MANS) $(psman_MANS) Makefile.BSD-dist
 
 EXTRA_DIST = $(DIST_OTHER) $(DIST_MAKE)
 
@@ -62,23 +63,20 @@ install-symlink-sbinPROGRAMS:
 	done
 
 NROFF = nroff
-TROFF = troff
+TROFF = groff
 ROFFDEV = -Tps
 PIC = pic
 TBL = tbl
 SOELIM = soelim
 
-SUFFIXES = .8 .cat8 .ps .txt
+SUFFIXES = .8 .cat8 .ps8
 
 .8.cat8:
 	@rm -f $@
-	$(NROFF) -mandoc $(srcdir)/$< > $@ || (rm -f $@; exit 1)
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -mandoc > $@ || (rm -f $@; exit 1)
 
-.8.txt:
-	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -mdoc > $@
-
-.8.ps:
-	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -mdoc $(ROFFDEV) > $@
+.8.ps8:
+	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -mandoc $(ROFFDEV) > $@ || (rm -f $@; exit 1)
 
 CLEANFILES = $(catman_MANS) $(man_MANS)
 
