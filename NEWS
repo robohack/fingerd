@@ -1,19 +1,27 @@
 Fingerd NEWS -- history of user-visible changes.
 Copyright (C) 1997 Planix, Inc.
 
-Please send NCVS bug reports to bugs@robohack.planix.com
+Please send fingerd bug reports to bugs@robohack.planix.com
+
+* User-visible changes new in Fingerd Release 1.3.90.
+
+- fixed the handling of user list denial to work properly in all cases
+(formerly 'finger -l' would make it think a user name had been given).
+- new '-S' option to force short replies ('finger -s').
+- new acl options "forceshort" and "defaultshort" to match '-S' and '-s'
+  options respectively.
 
 * User-visible changes new in Fingerd Release 1.3.81.
 
-** This release add more complete autoconf support.
+- This release adds more complete automake/autoconf support.
 
 * User-visible changes new in Fingerd Release 1.3.80.
 
-** This is a clean-up release with the primary purpose of introducing
-   a more stable and automated build system.  No new features exist.
+- This is a clean-up release with the primary purpose of introducing
+  a more stable and automated build system.  No new features exist.
 
 The baseline for this code is approximately fingerd-1.3 by Michael S.
 Shanzer <shanzer@foobar.com>.
 
 
-#ident	"@(#)fingerd:$Name:  $:$Id: NEWS,v 1.3 1997/04/07 18:49:23 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: NEWS,v 1.4 1997/09/12 19:22:31 woods Exp $"
