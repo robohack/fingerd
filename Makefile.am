@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.4 1997/09/14 03:46:57 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.5 1997/09/15 00:42:07 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -12,10 +12,11 @@ DIST_OTHER = README.wildcard
 
 EXTRA_DIST = fingerd.txt
 
-sbin_PROGRAMS = fingerd
+libexec_PROGRAMS = fingerd
 
 fingerd_SOURCES = \
-	fingerd.h fingerd.c access.c wildcard.c rfc931.c misc.c version.c
+	fingerd.h fingerd.c access.c wildcard.c misc.c version.c \
+	rfc931.c tcpd.h
 
 fingerd_LDADD = @LIBOBJS@
 
@@ -32,11 +33,15 @@ FLAGS_TO_PASS = \
 ##	local extensions to automake
 ##
 
+
+#
+# Used below in special install-symlinks hooks
+#
+syslibexecdir = @syslibexecdir@
+
 #
 # special rules for safely replacing vendor version with a symlink....
 #
-
-syslibexecdir = @syslibexecdir@
 
 install-symlinks: install-symlink-sbinPROGRAMS
 
@@ -48,7 +53,7 @@ install-symlink-sbinPROGRAMS:
 	      mv $(syslibexecdir)/$$pname $(syslibexecdir)/$${pname}-ORIG ; \
 	    fi ;							\
 	    rm -f $(syslibexecdir)/$$pname ;				\
-	    ln -s $(sbindir)/$$pname $(syslibexecdir)/$$pname ;		\
+	    ln -s $(libexecdir)/$$pname $(syslibexecdir)/$$pname ;		\
 	  fi ;								\
 	done
 
@@ -75,9 +80,9 @@ $(PROGRAMS): Makefile
 
 $(man_MANS): config.status
 
-fingerd.o: fingerd.h config.h
+fingerd.o: fingerd.h tcpd.h config.h
 access.o: fingerd.h config.h
 misc.o: fingerd.h config.h
-rfc931.o: fingerd.h config.h
+rfc931.o: fingerd.h tcpd.h config.h
 wildecard.o: config.h
 version.o: config.h
