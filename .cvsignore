@@ -2,6 +2,7 @@ INSTALL
 Makefile
 Makefile.BSD
 Makefile.in
+README.developers
 aclocal.m4
 config.cache
 config.h
