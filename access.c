@@ -30,7 +30,7 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.6 1999/01/15 00:22:09 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.7 1999/01/15 18:10:41 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -91,7 +91,7 @@ access_check(user, host)
 	int		match = FALSE;
 		
 
-	if (!(fp = fopen(FINGER_ACL, "r"))) {
+	if (!(fp = fopen(FINGERD_ACL, "r"))) {
 #ifdef DEBUG
 		if (debug)
 			printf("fingerd: no host specified.\n");
@@ -119,13 +119,13 @@ access_check(user, host)
 			continue;
 		if ((tp = strchr(cp, '@'))) {
 			*tp = '\0';
-			if (wc_comp(cp))
+			if (wc_comp(cp)) /* XXX should use glob(3) */
 				continue;
 			if (!wc_exec(user))
 				continue;
 			cp = ++tp;
 		}
-		if (wc_comp(cp))
+		if (wc_comp(cp))	/* XXX should use glob(3) */
 			continue;
 		if (!wc_exec(host))
 			continue;
@@ -146,12 +146,12 @@ access_check(user, host)
 			return ACCESS_DENIED;
 		if (strcasecmp(cp, "all") == 0)
 			return ACCESS_GRANTED;
-		if (strcasecmp(cp, "noforward") == 0) {
-			ret |= ACCESS_NOFORWARD;
-			continue;
-		}
 		if (strcasecmp(cp, "nolist") == 0) {
 			ret |= ACCESS_NOLIST;
+			continue;
+		}
+		if (strcasecmp(cp, "forward") == 0) {
+			ret |= ACCESS_FORWARD;
 			continue;
 		}
 		if (strcasecmp(cp, "forceident") == 0) {
@@ -168,6 +168,22 @@ access_check(user, host)
 		}
 		if (strcasecmp(cp, "defaultshort") == 0) {
 			ret |= ACCESS_DEFAULTSHORT;
+			continue;
+		}
+		if (strcasecmp(cp, "showhost") == 0) {
+			ret |= ACCESS_SHOWHOST;
+			continue;
+		}
+		if (strcasecmp(cp, "noplan") == 0) {
+			ret |= ACCESS_NOPLAN;
+			continue;
+		}
+		if (strcasecmp(cp, "nogecos") == 0) {
+			ret |= ACCESS_NOGECOS;
+			continue;
+		}
+		if (strcasecmp(cp, "nohome") == 0) {
+			ret |= ACCESS_NOHOME;
 			continue;
 		}
 #ifdef DEBUG
