@@ -1,0 +1,40 @@
+#
+#	fingerd access control list
+#
+#ident	"@(#)$Name:  $:$Id: fingerd.acl,v 1.1 1999/01/17 01:07:44 woods Exp $"
+#
+#    none          deny all access.
+#    forward       allow forwarding of finger requests (same as -f).
+#    nogecos       do not show GECOS information (same as -g).
+#    nohome        do not show user's home directory location (same as -b).
+#                  (Note that this option may not work with all versions of
+#                  finger.)
+#    nolist        disallow user lists (same as -u).
+#    nomatch       do not match on fullname (same as -m).
+#    noplan        do not show user's ~/.plan, etc. files (same as -p).
+#    forceident    fail if ident queries fail (same as -I).
+#    forceshort    force short reply only (same as -S).
+#    defaultshort  default to short reply (same as -s).
+#    showhost      show user's remote host instead of office information
+#                  (same as -h).
+# 
+# The first line that matches is the the line that'll apply.  There is
+# no default -- use '*' to match any host or user.
+# 
+# Command line options set the defaults, so for example if you enable
+# forwarding by specifying `-f' on the fingerd command line then you
+# do not need to put `forward' in here cause it applies to all
+# connections.  Note that the `forceident' always fails if fingerd was
+# not invoked with either `-i' or `-I'.
+#
+#*@*.foobar.com:	forceident
+#*@nick.csh.rit.edu:	forward
+#*@*.powerdog.com:	forward
+#*: 			nolist
+#
+#woods@very.weird.com:	forceident, nomatch
+#*.weird.com:		forward,forceident
+#*.planix.com:		forward,forceident
+#*.dancing.org:		forward
+#*.passport.ca:		forward
+#*:			nolist,nomatch

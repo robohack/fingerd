@@ -1,0 +1,6 @@
+This is a custom finger server by Mike Shanzer <shanzer@foobar.com>
+and Greg A. Woods <woods@planix.com>.
+
+Please send any comments or questions to <woods@planix.com>.
+
+#ident	"@(#)$Name:  $:$Id: fingerd.motd,v 1.1 1999/01/17 01:07:45 woods Exp $"
