@@ -1,16 +1,12 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.11 2000/12/02 03:49:35 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.12 2000/12/02 17:35:05 woods Exp $"
 
-AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
+AUTOMAKE_OPTIONS = gnu no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
 
 SUBDIRS = samples
-
-DIST_OTHER = README.wildcard
-
-EXTRA_DIST = fingerd.txt
 
 libexec_PROGRAMS = fingerd
 
@@ -21,8 +17,19 @@ fingerd_SOURCES = \
 fingerd_LDADD = @LIBOBJS@
 
 man_MANS = fingerd.8
+catman_MANS = fingerd.cat8
 
 INCLUDES = -I.
+
+# things that exist in the repository
+DIST_OTHER = \
+	README.developers ToDo \
+	README.wildcard fingerd.txt
+
+# things that must be made during 'make dist'
+DIST_MAKE = $(catman_MANS) Makefile.BSD-dist
+
+EXTRA_DIST = $(DIST_OTHER) $(DIST_MAKE)
 
 # Mention here files which are created using '--add-missing'
 MAINTAINERCLEANFILES = install-sh missing mkinstalldirs INSTALL README.developers
@@ -61,7 +68,11 @@ PIC = pic
 TBL = tbl
 SOELIM = soelim
 
-SUFFIXES = .8 .ps .txt
+SUFFIXES = .8 .cat8 .ps .txt
+
+.8.cat8:
+	@rm -f $@
+	$(NROFF) -mandoc $(srcdir)/$< > $@ || (rm -f $@; exit 1)
 
 .8.txt:
 	$(SOELIM) $(srcdir)/$? | $(TBL) | $(NROFF) -mdoc > $@
@@ -69,13 +80,21 @@ SUFFIXES = .8 .ps .txt
 .8.ps:
 	$(SOELIM) $(srcdir)/$? | $(TBL) | $(TROFF) -mdoc $(ROFFDEV) > $@
 
+CLEANFILES = $(catman_MANS) $(man_MANS)
+
 #
 # hard-coded dependencies
 #
 
-$(PROGRAMS): Makefile
+$(PROGRAMS): Makefile Makefile.BSD
 
 $(man_MANS): config.status
+
+Makefile.BSD-dist: Makefile.BSD
+	@rm -f $@
+	cp $? $@
+
+Makefile.BSD: Makefile.BSD.in config.status
 
 fingerd.o: fingerd.h tcpd.h config.h
 access.o: fingerd.h config.h
