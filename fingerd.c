@@ -30,7 +30,7 @@
  * fingerd main loop
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.4 1997/04/07 18:44:10 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.5 1997/09/12 19:30:03 woods Exp $"
 
 #include <config.h>
 
@@ -82,18 +82,19 @@ main(argc, argv)
 	int             argc;
 	char           *argv[];
 {
-	struct		hostent		*hp;
-	struct		sockaddr_in	sin, laddr;
-	unsigned	long		perm = ACCESS_DENIED;
+	struct hostent		*hp;
+	struct sockaddr_in	sin, laddr;
+	unsigned long	perm = ACCESS_GRANTED;
 	FILE		*fp;
 	char		*lp;
 	int		logging = FALSE,
-			secure = FALSE,
+			nolist = FALSE,
 			noforward = FALSE,
 			doident = FALSE,
 			forceident = FALSE,
 			forceresolv = FALSE,
-			shrt = FALSE,
+			forceshort = FALSE,
+			defaultshort = FALSE,
 			nomatch = FALSE,
 			ac = 1,
 			ch,
@@ -108,7 +109,7 @@ main(argc, argv)
 	prog = FINGER_PATH;
 	openlog("fingerd", LOG_PID, FINGER_SYSLOG);
 	opterr = 0;
-	while ((ch = getopt(argc, argv, "lp:ufiIsmbrV")) != EOF) {
+	while ((ch = getopt(argc, argv, "lp:ufiIsSmbrV")) != EOF) {
 		switch (ch) {
 		case 'l':			
 			logging = TRUE;
@@ -117,7 +118,7 @@ main(argc, argv)
 			prog = optarg;
 			break;
 		case 'u':			
-			secure = TRUE;
+			nolist = TRUE;
 			break;
 		case 'f':			
 			noforward = TRUE;
@@ -129,7 +130,10 @@ main(argc, argv)
 			forceident = TRUE;
 			break;
 		case 's':
-			shrt = TRUE;
+			defaultshort = TRUE;
+			break;
+		case 'S':
+			forceshort = TRUE;
 			break;
 		case 'm':
 			nomatch = TRUE;
@@ -149,135 +153,157 @@ main(argc, argv)
 		}
 	}
 	sval = sizeof(sin);
-	if (getpeername(0, (struct sockaddr *)&sin, &sval) < 0)
+	if (getpeername(0, (struct sockaddr *) &sin, &sval) < 0)
 		err("getpeername: %s", strerror(errno));
 	if (getsockname(0, (struct sockaddr *) &laddr, &sval) < 0)
 		err("getsockname: %s", strerror(errno));
 		
-	if ((hp = gethostbyaddr((char *)&sin.sin_addr.s_addr,
-			       sizeof(sin.sin_addr.s_addr), AF_INET))) {
-		rhost = strdup(hp->h_name);
-		
+	if (doident || forceident) {
+		if (!(ruser = strdup(rfc931(&sin, &laddr))))
+			err("strdup: no memory - %s", strerror(errno));
+	} else { 
+		if (!(ruser = strdup(NO_IDENT_DONE)))
+			err("strdup: no memory - %s", strerror(errno));
+	}
+	if ((hp = gethostbyaddr((char *) &sin.sin_addr.s_addr,
+				sizeof(sin.sin_addr.s_addr), AF_INET))) {
 		/*
 		 * The following is here to try and prevent people
 		 * from putting in fake IN-ADDR records.
 		 */
-		if ((hp = gethostbyname(rhost)) == NULL) {
+		if (!(rhost = strdup(hp->h_name)))
+			err("strdup: no memory - %s", strerror(errno));
+		if (!(hp = gethostbyname(rhost))) {
 			if (forceresolv) {
 				syslog(LOG_NOTICE,
-				       "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
-				       rhost, rhost, inet_ntoa(sin.sin_addr));
-				printf("Sorry, I cannot resolve the hostname for your address '%s' (%s).",
+				       "from=%s@[%s] to=[unknown] stat=Cannot re-resolve %s",
+				       ruser, inet_ntoa(sin.sin_addr), rhost);
+				printf("Possible name server mis-configuration.\nSorry, I cannot resolve your hostname '%s' [%s].",
 				       rhost, inet_ntoa(sin.sin_addr));
 				exit(1);
 				/* NOTREACHED */
 			}
-			rhost = strdup(inet_ntoa(sin.sin_addr));
+			if (!(rhost = strdup(inet_ntoa(sin.sin_addr))))
+				err("strdup: no memory - %s", strerror(errno));
 		} else {
 			struct	in_addr *i;
 			int match = FALSE;
+
 			while ((i = (struct in_addr *) *hp->h_addr_list++)) {
-				if (i->s_addr ==
-				    sin.sin_addr.s_addr) {
+				if (i->s_addr == sin.sin_addr.s_addr) {
 					match = TRUE;
 					break;
 				}
 			}
 			if (!match) {
 				syslog(LOG_NOTICE,
-				       "from=[unknown]@%s to=[unknown] stat=Address %s does not resolve to %s (%s).",
-				       rhost, inet_ntoa(sin.sin_addr), rhost, hp->h_name);
-				printf("Name server mis-configuration.  You are really on %s.  It is not %s.\n",
-				       inet_ntoa(sin.sin_addr), hp->h_name);
+				       "from=%s@[%s] to=[unknown] stat=host %s does not resolve to [%s].",
+				       ruser, inet_ntoa(sin.sin_addr), rhost, inet_ntoa(sin.sin_addr));
+				printf("Name server mis-configuration.\nSorry, your host '%s' does not have the address [%s].\n",
+				       rhost, inet_ntoa(sin.sin_addr));
 				exit(1);
 				/* NOTREACHED */
 			}
 		}
-
 	} else {
+		if (!(rhost = strdup(inet_ntoa(sin.sin_addr))))
+			err("strdup: no memory - %s", strerror(errno));
 		if (forceresolv) {
-			syslog(LOG_NOTICE, "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
-			       rhost, rhost, inet_ntoa(sin.sin_addr));
-			printf("Sorry, I cannot resolve the hostname for your address '%s' (%s).",
-			       rhost, inet_ntoa(sin.sin_addr));
+			syslog(LOG_NOTICE, "from=%s@[%s] to=[unknown] stat=Cannot resolve hostname",
+			       ruser, rhost);
+			printf("Sorry, I cannot resolve your hostname from your address [%s].",
+			       rhost);
 			exit(1);
 			/* NOTREACHED */
 		}
-		rhost = strdup(inet_ntoa(sin.sin_addr));
 	}
-		
-	if (doident || forceident)
-		ruser = strdup(rfc931(&sin, &laddr));
-	else
-		ruser = strdup("[unknown]");
-	perm = access_check(ruser, rhost);
 	if (!fgets(line, sizeof(line), stdin)) {
 		exit(1);
 		/* NOTREACHED */
 	}
 	ap = strtok(line, "\r\n");
-	if (perm & ACCESS_NOLIST)
-		secure = TRUE;
-	if (perm & ACCESS_NOFORWARD)
-		noforward = TRUE;
-	if (perm & ACCESS_FORCEIDENT)
-		forceident = TRUE;
-	if (perm & ACCESS_NOMATCH)
-		nomatch = TRUE;
-	if (!strcmp(ruser, "[unknown]")) {
-		if(forceident == TRUE) {
-			if(logging)
-				syslog(LOG_NOTICE,
-				       "from=%s@%s to=%s stat=No ident server",
-				       ruser, rhost, (ap ? ap : "[user list]"));
-			puts("Access denied, no ident reply.");
-			exit(1);
-			/* NOTREACHED */
-		}
-	}
-	if (perm == ACCESS_DENIED) {
-		if (logging)
+
+	perm = access_check(ruser, rhost); /* only after resolving is done */
+	if (perm & ACCESS_DENIED) {
+		if (logging) {
 			syslog(LOG_NOTICE,
 			       "from=%s@%s to=%s stat=Refused",
 			       ruser, rhost, (ap ? ap : "[user list]"));
-		puts("Access denied.");
+		}
+		puts("Access to finger services denied.");
 		exit(1);
 		/* NOTREACHED */
 	}
-	if ((ap && !*ap) || (!ap && secure)) {
-		if (secure) {
-			if (logging)
-				syslog(LOG_NOTICE,
-				       "from=%s@%s to=%s stat=Refused",
-				       ruser, rhost, "[user list]");
-			puts("User list denied.");
-			exit(1);
-			/* NOTREACHED */
+	if (perm & ACCESS_NOLIST)
+		nolist = TRUE;
+	if (perm & ACCESS_NOFORWARD)
+		noforward = TRUE;
+	if (perm & ACCESS_NOMATCH)
+		nomatch = TRUE;
+	if (perm & ACCESS_FORCESHORT)
+		forceshort = TRUE;
+	if (perm & ACCESS_DEFAULTSHORT)
+		defaultshort = TRUE;
+	if (perm & ACCESS_FORCEIDENT)
+		forceident = TRUE;
+	if (forceident && (strcmp(ruser, NO_IDENT_REPLY) == 0 ||
+			   strcmp(ruser, NO_IDENT_DONE) == 0)) {
+		if (logging) {
+			syslog(LOG_NOTICE,
+			       "from=%s@%s to=%s stat=No ident server",
+			       ruser, rhost, (ap ? ap : "[user list]"));
 		}
+		if (strcmp(ruser, NO_IDENT_DONE) == 0)
+			puts("Access to finger services denied.  Valid 'ident' not available.");
+		else
+			puts("Access to finger services denied.  Valid 'ident' reply required.");
+		exit(1);	
+		/* NOTREACHED */
+	}
+	lp = ap;
+	ap = strtok(lp, " ");
+	if (forceshort) {
+		if (!(av[ac++] = strdup("-s")))
+			err("strdup: no memory - %s", strerror(errno));
+	} else if (ap && ap[0] == '/' && toupper(ap[1]) == 'W') {
+		av[ac++] = strdup("-l");
+		ap = strtok((char *) NULL, " ");
 	} else {
-		lp = ap;
-		ap = strtok(lp, " ");
-		if (ap && ap[0] == '/' && toupper(ap[1]) == 'W') {
-			av[ac++] = strdup("-l");
-			ap = strtok((char *) 0, " ");
-		} else if (shrt) av[ac++] = strdup("-s");
-		if (nomatch) av[ac++] = strdup("-m");
-		if (noforward && (ap && strchr(ap, '@'))) {
-			if (logging) 
-				syslog(LOG_NOTICE,
-				       "from=%s@%s to=%s stat=Refused Forwarding",
-				       ruser, rhost, ap);
-			puts("Fowarding service denied.");
-			exit(1);
-			/* NOTREACHED */
+		if (defaultshort) {
+			if (!(av[ac++] = strdup("-s")))
+				err("strdup: no memory - %s", strerror(errno));
 		}
 	}
-	if (logging)
+	if (nomatch)
+		av[ac++] = strdup("-m");
+	if (noforward && (ap && strchr(ap, '@'))) {
+		if (logging) {
+			syslog(LOG_NOTICE,
+			       "from=%s@%s to=%s stat=Refused Forwarding",
+			       ruser, rhost, ap);
+		}
+		puts("Finger fowarding service denied.");
+		exit(1);
+		/* NOTREACHED */
+	}
+	if (nolist && (!ap || (ap && !*ap))) {
+		if (logging) {
+			syslog(LOG_NOTICE,
+			       "from=%s@%s to=%s stat=Refused",
+			       ruser, rhost, "[user list]");
+		}
+		puts("Finger of user list denied.");
+		exit(1);
+		/* NOTREACHED */
+	}
+	if (logging) {
 		syslog(LOG_NOTICE, "from=%s@%s to=%s stat=OK",
 		       ruser, rhost, (ap ? ap : "[user list]"));
+	}
 	if ((fp = fopen(FINGER_MOTD, "r"))) {
 		char	mline[BUFSIZ];
-		while (fgets(mline, sizeof(line), fp) != NULL)
+
+		while (fgets(mline, sizeof(line), fp))
 			fputs(mline, stdout);
 		puts("----");
 		fclose(fp);
@@ -290,12 +316,16 @@ main(argc, argv)
 			av[ac++] = strdup(ap);
 	}
 	av[ac] = NULL;
-	if ((lp = strrchr(prog, '/')) != NULL)
-		av[0] = strdup(++lp);
-	else
-		av[0] = strdup(prog);
+	if ((lp = strrchr(prog, '/')) != NULL) {
+		if (!(av[0] = strdup(++lp)))
+			err("strdup: no memory - %s", strerror(errno));
+	} else {
+		if (!(av[0] = strdup(prog)))
+			err("strdup: no memory - %s", strerror(errno));
+	}
 	if (!execute(prog, av))
 		err("execute: %s", strerror(errno));
+
 	exit(0);
 	/* NOTREACHED */
 }
