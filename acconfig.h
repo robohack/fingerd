@@ -1,4 +1,4 @@
-#ident	"@(#)$Name:  $:$Id: acconfig.h,v 1.5 1999/01/15 19:51:41 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.6 1999/01/17 01:12:05 woods Exp $"
 
 @TOP@
 
@@ -9,13 +9,7 @@
 #define VERSION	"Pre-release"
 
 /* path to the finger program */
-#define FINGER_PATH		"/usr/bin/finger"
+#define PATH_FINGER		"/usr/bin/finger"
 
-/* path to the motd file */
-#define FINGERD_MOTD		"/usr/local/share/fingerd/motd"
-
-/* path to the acl file */
-#define FINGERD_ACL		"/usr/local/share/fingerd/access"
-
-/* path to the users file */
-#define FINGERD_USERS		"/usr/local/share/fingerd/users"
+/* path to the system config directory */
+#define PATH_SYSCONFDIR		"/etc"
