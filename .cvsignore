@@ -12,6 +12,7 @@ configure
 fingerd
 fingerd.8
 fingerd.txt
+import.d
 install-sh
 missing
 mkinstalldirs
