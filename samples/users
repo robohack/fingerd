@@ -1,4 +1,8 @@
 #
+#	fingerd "users" file - run programs from fingerd
+#
+#ident	"@(#)$Name:  $:$Id: users,v 1.3 1999/01/15 19:53:19 woods Exp $"
+#
 # The format of this file is as follows:
 #	username: program [args...]
 #
