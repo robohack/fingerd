@@ -24,159 +24,420 @@
 .\"  		shanzer@foobar.com
 .\"
 .\"
-.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.4 1999/01/14 23:16:26 woods Exp $"
+.\"#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.5 1999/01/15 17:59:17 woods Exp $"
 .\"
-.TH FINGERD 8 "1997 April 6" "$Name:  $" "Local Internet Daemons"
-.SH NAME
-fingerd \- remote user information server
-.SH SYNOPSIS
-\fB@FQSBINDIR@/fingerd\fR [\fB-p progname\fR] [\fB-lufiIsmb\fR]
-.SH DESCRIPTION
-\fBfingerd\fR implements the server side of the the Name/Finger protocol,
-specified in \s-2RFC\s0 1288.  The Name/Finger protocol provides a remote
-interface to programs which display information on system status and
-individual users.  The protocol imposes little structure on the format of the
-exchange between client and server.  The client provides a single
-\*(lqcommand line\*(rq to the finger server which returns a printable reply.
-.LP
-\fBfingerd\fR is normally run by
-.BR inetd (8),
-and waits for connections on port 79.  Once connected it reads a single
-command line terminated by a \s-1LINEFEED\s0.  If the command line is empty,
-it checks the access file (see below) to see if user listings from
-the originating host & user are permitted.  If user listings are allowed,
-fingerd executes
-.BR finger (1)
-with the appropriate options.
-.LP
-If the command line contains a user name fingerd checks the \fBusers\fR file
-(see below) to see if the user-name is listed.  If the requested user name is
-listed in the config file, the program listed in the user's file is run with
-the arguments specified.  Otherwise
-.BR finger (1)
-is run with the appropriate options and the requested user-name.
-.SH OPTIONS
-.TP
-\fB\-l\fR Log all accepted and refused finger requests.
-.TP
-\fB\-u\fR Do not allow user listings.
-.TP
-\fB\-f\fR Do not forward finger requests.
-.TP
-\fB\-i\fR Attempt \s-2RFC\s0 1413 compliant ident queries.
-.TP
-\fB\-I\fR Same as \fB\-i\fR but reject the connection if the query fails.
-.TP
-\fB\-r\fR Refuse connections if can not resolve hostname.
-.TP
-\fB\-s\fR Tells finger to do a short listings by default.
-.TP
-\fB\-S\fR Tells finger to force short listings.
-.TP
-\fB\-m\fR Tells finger to do only exact matches.
-.TP
-\fB\-b\fR Tells finger not to print user's shell and home directory.
-.TP
-\fB\-p progname\fR Use \fIprogname\fR as the finger program.
-.SH "MESSAGE FILE"
-\fBfingerd\fR will send the contents of a message file before running the
-finger program.  The path name for the message file is normally
-\fI@FINGER_MOTD@\fR.
-.SH "ACCESS FILE"
-\fBfingerd\fR enables you to accept and refuse queries depending on the
-client's hostname and/or username.  The path name for the access file is
-normally \fI@FINGER_ACL@\fR.
+.Dd January 16, 1999
+.Os NetBSD 1.3I
+.Dt FINGERD 8 SMM
+.\"
+.Sh NAME
+.Nm fingerd
+.Nd remote user information server
+.\"
+.Sh SYNOPSIS
+.Nm
+.Op Fl P finger
+.Op Fl bfglmpru
+.Op Fl h | Fl H
+.Op Fl i | Fl I
+.Op Fl s | Fl S
+.\"
+.Sh DESCRIPTION
+.Nm
+implements the server side Remote User Information Program
+.Dv ( RUIP )
+of the the Finger (or Name) protocol, specified in
+.Tn "RFC 1288" .
+The Finger protocol provides a remote interface to programs which
+display information on system status and individual users.  The protocol
+imposes little structure on the format of the exchange between client
+and server.  The client provides a single command line to the
+.Nm
+server which normally returns a friendly human-oriented status report
+listing the users of the system at the moment, or an in-depth report of
+information about a particular user.
+.Pp
+.Nm
+is started by
+.Xr inetd 8 ,
+which is normally configured to listen for connections on
+.Tn TCP
+port 79.  Once a client has connected the connection is handed to
+.Nm
+which reads a single command line terminated by
+.Tn ASCII
+carriage-return and linefeed characters.
+.Pp
+.Nm
+uses an access control file (see below) to see if user listings from the
+originating host (and user) are permitted, and what permissions are
+granted to the client host (and user).  If user listings are allowed,
+and if the request sepcifies a user name
+.Nm
+checks to see if that user-name is listed in a users file (see below).
+If the requested user name is listed in this file, the program specified
+for that user-name is run.  Otherwise the
+.Xr finger 1
+program is run with the appropriate options.
+.\"
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl b
+Tell
+.Nm finger
+not to print user's shell and home directory.  (Note that this option
+may not work with all versions of
+.Nm finger . )
+.It Fl f
+Allow forwarding of
+.Nm finger
+requests.
+.It Fl g
+Tell
+.Nm finger
+not to show any
+.Dq GECOS
+information (normally the user's office location and office phone
+number) besides the users' real names.
+.It Fl h
+Tell
+.Nm finger
+to show the remote hostname the user is logged in from, if any (in
+.Dq short
+mode) instead of the office location and office phone.
+.It Fl H
+Forces
+.Nm finger
+to use the hostname format as in
+.Fl h .
+.It Fl i
+Attempt
+.Tn "RFC 1413"
+compliant user identification queries.
+.It Fl I
+Same as
+.Fl i
+but reject the connection if the
+.Dq ident
+query fails.
+.It Fl l
+Log all
+.Nm finger
+requests.  The name of the host originating the query, possibly the
+.Dq Em ident
+reply, along with the actual request is reported via
+.Xr syslog 3
+at
+.Dv LOG_NOTICE
+priority using the
+.Dv LOG_DAEMON
+facility.
+.It Fl m
+Tell
+.Nm finger
+to do only exact matches.
+.Ar User
+is usually a login name; however, matching will also be done on the
+users' real names, unless the
+.Fl m
+option is supplied.
+.It Fl p
+Tell
+.Nm finger
+not to show the user's
+.Pa ~/.plan
+or
+.Pa ~/.project
+files in
+.Dq long
+listings.
+.It Fl P Ar finger
+Use an alternate
+.Ar finger
+program as the local information provider.  The default local program
+executed by
+.Nm
+is
+.Xr finger 1 .
+The program must be specified by its fully qualified pathname.
+.It Fl r
+Refuse connections if the remote hostname cannot be resolved.
+.It Fl s
+Tells
+.Nm finger
+to do short listings by default, one line per user.  This option
+normally has effect only when
+.Fl m
+is
+.Em not
+specified and the query matches more than one user-name.
+.It Fl S
+Tell
+.Nm finger
+to force short listings.  This overrides any request by the remote
+client for a verbose report.
+.It Fl u
+Queries without a user name are rejected.
+.El
+.\"
+.Sh CONFIGURATION FILES
+.\"
+.Ss Message File
+.Nm
+will send the contents of a message file before running the finger
+program.  The path name for the message file is normally
+.Pa /etc/fingerd.motd .
+.\"
+.Ss Access File
+.Nm Fingerd
+enables you to accept and refuse queries depending on the client's
+hostname and/or username.  The path name for the access file is normally
+.Pa /etc/fingerd.acl .
 The format of the file is:
-.IP
-[\fIuser-name\fR\fB@\fR]\fIhost-name	permission\fR
-.LP
-\fBfingerd\fR attempts to match the remote user's name and the remote host's name
-with what is in the access file.  If a match is found, \fBpermission\fR
-is used to process the request.  Both the \fBuser-name\fR and the
-\fBhostname\fR can either be literal strings or wildcards.  The first line to
-match the request is the one used.
-.LP
-\fBpermission\fR must be one of the following:
-.IP \fInone\fR
-\- deny all access.
-.IP \fInoforward\fR
-\- do not forward finger requests.
-.IP \fInolist\fR
-\- disallow user lists.
-.IP \fInomatch\fR
-\- do not match on fullname (finger -m).
-.IP \fIforceident\fR
-\- fail if ident queries fail.
-.IP \fIforceshort\fR
-\- force short reply only (finger -s).
-.IP \fIdefaultshort\fR
-\- default to short reply.
-.LP
-Command line options take precedence over the access file.
-.SH "USERS FILE"
-\fBfingerd\fR enables you to assign different programs to specific user
-names.  This option is useful for vending machines and other services that
-use finger to report information.  The path name for the \fBusers\fR file
-is normally \fI@FINGER_USERS@\fR.
+.Pp
+.Bd -offset indent
+.Bo Ar client-user Ns Sy @ Bc Ar client-host-name
+.Ar permission
+.Ed
+.Pp
+.Nm
+attempts to match the remote user's name (if available from an
+.Dq ident
+query, and if specified) and the remote host's name with what is in the
+access file.  If a match is found,
+.Dq Em permission
+is used to process the request.  Both the
+.Dq Em client-user
+and the
+.Dq Em client-host-name
+can either be literal strings or wildcard expressions (ala
+.Xr sh 1
+.Dq glob
+patterns).  The first line to match the request is the one used to set
+the permissions.
+.Pp
+The value of
+.Dq Em permission
+must be one of the following:
+.Pp
+.Bl -tag -width defaultshowhost -compact
+.It none
+deny all access.
+.It forward
+allow forwarding of finger requests (same as
+.Fl f ) .
+.It nogecos
+do not show GECOS information (same as
+.Fl g ) .
+.It nohome
+do not show user's home directory location (same as
+.Fl b ) .
+(Note that this option may not work with all versions of
+.Nm finger . )
+.It nolist
+disallow user lists (same as
+.Fl u ) .
+.It nomatch
+do not match on fullname (same as
+.Fl m ) .
+.It noplan
+do not show user's
+.Pa ~/.plan ,
+etc. files (same as
+.Fl p ) .
+.It forceident
+fail if ident queries fail (same as
+.Fl I ) .
+.It forceshort
+force short reply only (same as
+.Fl S ) .
+.It defaultshort
+default to short reply (same as
+.Fl s ) .
+.It showhost
+show user's remote host instead of office information (same as
+.Fl h ) .
+.El
+.Pp
+Command line options set the global defaults and cannot be reset with
+the access file, but access file permissions allow specific refinement
+of options.
+.\"
+.Ss Users File
+.Nm Fingerd
+enables you to assign different programs to specific user names.  This
+option is useful for vending machines and other services that use finger
+to report information.  The path name for the \fBusers\fR file is
+normally
+.Pa /etc/fingerd.users .
 The format of the file is:
-.IP
-\fIuser-name	program [args]\fR
-.LP
-\fBuser-name\fR is the user-name to match against.  This must be a literal
-match; wildcards are not accepted.
-\fBprogram [args]\fR is the full pathname of the program to run and the
+.Pp
+.Bd -offset indent
+.Ar name Ar program Op Ar args ...
+.Ed
+.Pp
+Lines beginning with
+.Dq Li #
+are ignored.
+.Pp
+The value of
+.Dq Em name
+is the user-name to match against.  This must be a literal match;
+wildcards and regular expressions are not accepted.  The 
+.Pp
+The remainder of the line,
+.Dq Em program Op args ...
+should consist of the full pathname of the program to run and the
 arguments you wish to give it.  If you specify
-\fI%U\fR as an argument it will get replaced with the remote user's
-name.  If you specify \fI%H\fR it will get replaced with the remote
-host's name.  To pass in a literal \fI%U\fR or \fI%H\fR prepend it with
-another \fI%\fR.
-.SH FILES
-.IP @FINGER_MOTD@
-\- message file sent prior to reply
-.IP @FINGER_ACL@
-\- access control list
-.IP @FINGER_USERS@
-\- programs to execute when fingered
-.SH "SEE ALSO"
-.BR finger (1)
-.LP
+.Dq Li %U
+anywhere it will be replaced with the remote user's name.  If you
+specify
+.Dq Li %H
+it will be replaced with the remote host's name.  To pass a literal
+.Dq Li %
+to a command you can prepend it with another
+.Dq Li % .
+.\"
+.Sh FILES
+.Bl -tag -width /etc/fingerd.users -compact
+.It Pa /etc/fingerd.motd
+message file sent prior to reply
+.It Pa /etc/fingerd.acl
+access control list
+.It Pa /etc/fingerd.users
+programs to execute when fingered
+.El
+.\"
+.Sh SEE ALSO
+.Xr finger 1 ,
+.Xr inetd 8 ,
+.Xr syslog 8
+.Pp
 Zimmerman, David,
 The Finger User Information Protocol,
-\s-2RFC\s0 1288,
+.Tn "RFC 1288" ,
 Center for Discrete Mathematics and Theoretical Computer Science,
 Rutgers University,
 December 1990.
-.SH BUGS
-The handling %H and %U in the user file is pretty primative and broken.
-.sp
-On some systems (at least SunOS 4.1.3) inetd only passes 4 command line
-options to the daemon it runs, so you should condense command line options.
-.br
-So instead of saying:
-.RS
-.B "fingerd -f -s -l -u"
-.RE
-say
-.br
-.RS
-.B "fingerd -fslu"
-.RE
-Trusting \fBidentd\fR is a silly thing to do, esp. for hosts you don't
-directly control.
-.SH AUTHOR
-This program was written by Mike Shanzer (shanzer@foobar.com) all comments
-and suggestions are welcome!
+.\"
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+.Bx 4.3 .
+.Pp
+This version of
+.Nm
+is known separately as
+.Dq Em "$Name:  $" .
+.\"
+.Sh AUTHORS
 .\" See also the THANKS file when updating this list....
-.sp
-Thanks to Kevin Ruddy (smiles@powerdog.com) for the wildcard library.
-.sp
-Thanks to Kelly DeYoe (kelly@nine.org) for the patches (the nomatch code)
-and sugestions.
-.sp
-Thanks to Wietse Venema (wietse@wzv.win.tue.nl) for the rfc931 code.
-.sp
-Greg A. Woods (woods@planix.com) improved the error handling and
-implemented more options.
-.sp
-And thanks to Christine Flemming (jones@csh.rit.edu) for helping with this man
-page.
+This program was originally written by Mike Shanzer
+.Aq Li shanzer@foobar.com
+all comments and suggestions are welcome!
+.Pp
+Thanks to Kevin Ruddy
+.Aq Li smiles@powerdog.com
+for the wildcard library.
+.Pp
+Thanks to Kelly DeYoe
+.Aq Li kelly@nine.org
+for the patches (the nomatch code) and suggestions.
+.Pp
+Thanks to Wietse Venema
+.Aq Li wietse@wzv.win.tue.nl
+for the rfc931 code.
+.Pp
+Thanks to Christine Flemming
+.Aq Li jones@csh.rit.edu
+for helping with the manual page.
+.Pp
+Greg A. Woods
+.Aq Li woods@planix.com
+did a major re-write, improving the error handling and implementing more
+options, as well as translating the manual to
+.Xr mdoc 7
+format.
+.\"
+.Sh BUGS
+The handling of
+.Dq Li %H
+and
+.Dq Li %U
+in the
+.Dq users
+file is pretty primitive and broken.
+.Pp
+On some systems (at least SunOS 4.1.3)
+.Xr inetd 8
+only passes a maximum of four(4) command line options to the daemon it
+runs, so you should condense command line options.
+So instead of using:
+.Dq Li "fingerd -f -s -l -u"
+use
+.Dq Li "fingerd -fslu" .
+.Pp
+Trusting
+.Tm "RFC 1413"
+and similar
+.Dq ident
+protocol results is a silly thing to do, especially for hosts you don't directly
+control.
+.Pp
+There should be some way to return only the very minimum required amount
+of information, i.e. the user's full name (as per
+.Tn "RFC 1288"
+Section 3.2.3).  The combination of
+.Fl S
+and
+.Fl g
+comes close, but still reveals the users's login terminal, time, and
+idleness with most implementations of
+.Nm finger .
+.\"
+.Sh SECURITY CONSIDERATIONS
+This version of
+.Nm
+reverses the meaning of the
+.Fl f
+option from that traditional to BSD implementations.  The new default
+matches the recommendations in
+.Tn "RFC 1288" ,
+and we echo the recommendation that forwarding
+.Em not
+be enabled (i.e. do
+.Em not
+use
+.Fl f ) .
+.Pp
+.Tn "RFC 1288"
+suggests that the
+.Dq "user list"
+feature be disabled to avoid giving away potentially sensitive
+information about the users of a system.  Similarly it is recommended
+that the
+.Fl m
+option be used to prevent
+.Nm finger
+from attempting to find a matching user name.  Administrators can also
+prevent the display of user office locations and phone numbers by using
+the
+.Fl g
+option.
+.Pp
+.Tn "RFC 1288"
+suggests that
+.Dv RUIP
+(Remote User Information Program)
+servers should not send the contents of
+.Dq "user information files"
+and this can be prevented on most systems by using the
+.Fl p
+option.
+.Pp
+The ability to execute arbitrary programs is very dangerous and should
+be used
+.Em only
+with great care, especially since it's also possible to pass information
+gathered from the network to these programs.
