@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: fingerd.c,v 1.9 1999/01/15 20:33:25 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: fingerd.c,v 1.10 1999/01/17 01:21:59 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -82,8 +82,11 @@ int deny_severity = LOG_WARNING;
 # include "tcpd.h"			/* XXX the local one, not any system one! */
 #endif
 
-extern	char	*optarg;
-extern	int	optind, opterr;
+char           *confdir = PATH_SYSCONFDIR;
+
+extern char    *optarg;
+extern int      optind;
+extern int      opterr;
 
 int
 main(argc, argv)
@@ -112,6 +115,7 @@ main(argc, argv)
 	int             ac = 1;
 	int             ch;
 	int             sval;
+	char           *pn_motd = NULL;
 	char           *ap;
 	char           *prog;
 	char           *rhost;
@@ -119,13 +123,16 @@ main(argc, argv)
 	char            line[BUFSIZ];
 	char           *av[BUFSIZ];
 
-	prog = FINGER_PATH;
-	openlog("fingerd", LOG_PID, FINGERD_SYSLOG);
+	prog = PATH_FINGER;
+	openlog("fingerd", LOG_PID, FINGERD_SYSLOG_FACILITY);
 	opterr = 0;
-	while ((ch = getopt(argc, argv, "bfghiIlmpP:rsSuV")) != EOF) {
+	while ((ch = getopt(argc, argv, "bc:fghiIlmpP:rsSuV")) != EOF) {
 		switch (ch) {
 		case 'b':
 			nohome = TRUE;
+			break;
+		case 'c':
+			confdir = optarg;
 			break;
 		case 'f':
 			forward = TRUE;
@@ -299,7 +306,9 @@ main(argc, argv)
 		exit(1);
 		/* NOTREACHED */
 	}
-	if ((fp = fopen(FINGERD_MOTD, "r"))) {
+	if (asprintf(&pn_motd, "%s/fingerd.motd", confdir) < 0)
+		err("asprintf: no memory - %s", strerror(errno));
+	if ((fp = fopen(pn_motd, "r"))) {
 		char	mline[BUFSIZ];
 
 		while (fgets(mline, sizeof(line), fp))
