@@ -9,6 +9,8 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
+#ident	"@(#)$Name:  $:$Id: rfc931.c,v 1.6 1999/01/15 20:04:19 woods Exp $"
+
 #ifndef lint
 static char sccsid[] = "@(#) rfc931.c 1.10 95/01/02 16:11:34";
 #endif
