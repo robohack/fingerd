@@ -5,10 +5,10 @@ dnl
 AC_INIT(fingerd.c)
 AC_PREREQ(2.12)dnl Required Autoconf version.
 
-AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.22 2000/12/02 18:07:02 woods Exp $"])dnl
+AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.23 2000/12/02 18:18:32 woods Exp $"])dnl
 
 PACKAGE="fingerd"
-VERSION="1.4"
+VERSION="1.4.0.80-Preview"
 
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
