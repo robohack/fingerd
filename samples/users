@@ -6,8 +6,8 @@
 # If you want to pass the remote username as an argument specify %U.
 # If you want to pass the remote hostname specify %H.
 # If you want to pass the literal %U or %H use %%U or %%H. 
-weather: /usr/local/bin/weather BOS
+#
+#weather: /usr/local/bin/weather BOS
+
 fortune: /usr/games/fortune
 hello:	/bin/echo Hello %U @ %H.
-
-
