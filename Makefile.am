@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)$Name:  $:$Id: Makefile.am,v 1.7 1999/01/15 19:51:40 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: Makefile.am,v 1.8 1999/01/17 01:10:28 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -28,6 +28,9 @@ FLAGS_TO_PASS = \
 	'CC=$(CC)' \
 	'CFLAGS=$(CFLAGS)' \
 	'LDFLAGS=$(LDFLAGS)'
+
+# Mention here files which are created using '--add-missing'
+MAINTAINERCLEANFILES = install-sh missing mkinstalldirs INSTALL
 
 ##
 ##	local extensions to automake
