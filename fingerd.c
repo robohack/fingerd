@@ -1,6 +1,6 @@
 /*
  * Copyright 1994 Michael Shanzer.  All rights reserved.
- * Copyright 1999 Greg A. Woods <woods@planix.com.  All rights reserved.
+ * Copyright 2000 Greg A. Woods <woods@planix.com.  All rights reserved.
  *
  * Permission is granted to anyone to use this software for any purpose on any
  * computer system, and to alter it and redistribute it freely, subject to the
@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.13 2000/12/02 03:53:53 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.14 2000/12/02 17:32:20 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
