@@ -1,0 +1,16 @@
+#	noforward -- do not allow forwarded fingers 
+#	forceident -- reject if remote host not running identd
+#	nolist -- do not allow listing of users logged in
+#	none -- access denied 
+#
+#	The first line that matches is the the line that'll apply
+#
+# command line options take precedence to what is in the file.
+# so for example if you specify '-f' on the fingerd command line
+# you do not neet to put noforward in here cause it applies to all
+# connections ...
+
+*@*.foobar.com:		noforward, forceident
+*@nick.csh.rit.edu:	noforward
+*@*.powerdog.com:	noforward
+*: 			nolist,noforward

@@ -1,0 +1,35 @@
+WILDCARD 1.1
+
+This is a reasonably short attempt at writing a drop-in
+replacement for the BSD regex(3) routines.  Well, it's not
+entirely drop-in; the function names are different, but that
+can be adjusted with a single defintion.  The functions were
+written in ANSI C, but they should be easily portable to K&R.
+
+Hopefully this will be portable to your platform, whatever
+that may be.  Platforms that have been tested:
+	SunOS 4.1.3, 4.1.3_U1
+	OSF/1 1.3 (not yet)
+
+Generating the object file is as simple as using your
+compiler.  For example, I used the following line to
+generate wildcard.o on a Sun platform:
+	gcc -O -c wildcard.c
+
+If you define REGEX_COMPAT, you may then use this package as
+a drop-in for the regex routines.  As in the above example:
+	gcc -DREGEX_COMPAT -O -c wildcard.c
+
+There is a manual page supplied as well, but it's pretty weak.
+
+If you have changes or modifications that you wish to donate,
+please send them on and I will probably incorporate them into
+the next release.  I am looking to provide proven support on
+as many platforms as I reasonably can, so if you can assist by
+testing this, I would appreciate it.
+
+The latest version is always available via anonymous FTP from
+ftp.powerdog.com in pub/wildcard.
+
+Kevin Ruddy
+Powerdog Industries

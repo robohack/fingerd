@@ -1,0 +1,81 @@
+This is a new more functional version of fingerd.
+What does this fingerd have to offer? 
+
+	- logging 
+	- access control lists, so you can restrict finger requests to 
+	  certain hosts (and certain users if you trust identd)
+	- a message of the day file.
+	- binding programs to certain users
+
+New in this version 1.3:
+	- added an option to refuse connections from hosts we can
+	  not resolve.
+	- can bind a program to [user list] in users file.
+	- do a gethostname lookup on what gethostbyname returned
+	  to try and make sure that someone did not put in a bogus
+	  IN-ADDR record.
+	- user names in the user file are now case-insensitive (kelly@nine.org)
+	- added nomatch to the config file so certain hosts can do fuzzy
+	  user name matching (kelly@nine.org)
+	- using new rfc931 code (wietse@wzv.win.tue.nl)
+
+TO BUILD FINGERD
+edit fingerd.h and fix the pathnames and syslog facility to something
+appropriate.
+
+edit the Makefile.  Set the STRERROR varible to strerror.o if your
+machine does not have strerror(3) inthe C-libary (SunOS)
+
+change BINDIR to be where you want to install fingerd.
+
+The man page that comes with fingerd is pretty poor, so here is a
+brief description:
+
+First fingerd options:
+	-l - enable logging. fingerd does its logging via syslog(3), and it
+	     uses the LOCAL3 facility.  it logs both successful and failed
+	     finger attempts.
+	-i - tells fingerd to try and use identd to figure out the
+	     remote user who is doing the finger.
+	-I - same as -i except that if it can not talk to the ident on the
+	     remote machine, the request is refused.
+	-u - do not allow remote users to get an user list.
+	-f - do forward finger requests (finger @host1@host2).
+	-s - by default run finger -s unless remote user specified -l
+	-m - run finger -m (do not attempt user matching)
+	-b - run finger -b (do not print home directory and shell)
+	-p prog - specify a different program to run instead
+		  of /usr/ucb/finger.
+
+Config. Files:
+	/usr/local/lib/finger/motd: message of the day. print this file out
+			     when a finger request is accepted.
+	/usr/local/lib/finger/access: a list of users and host which you
+			       either want to allow to finger you, or
+			       ones you want to specificly deny. 
+			       Look in the samples directory for
+			       examples on how to set this file up.
+	/usr/local/lib/finger/users:	a list of users that when fingered
+				should have a different program run then
+				the standard finger program. If you want the
+				remote host and/or the remote user to be
+				arguments to the program specify the arguments
+				as %H and %U respectivly. If you want
+				the %H/%U literal to be an argument specify
+				it with two % signs (%%H %%U).
+				Look in the samples directoy for some 
+				examples.
+
+		*WARNING* the remote user is gotten via identd (rfc 1413)
+			  this data should not be considered trustworthy.
+
+If you have any troubles, questions of feature requests send mail to
+shanzer@foobar.com. The lastest version of this software is always available
+at ftp://kiwi.foobar.com/fingerd.tar.gz
+
+
+				Mike Shanzer
+				
+
+		
+		  
