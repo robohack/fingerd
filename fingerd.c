@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: fingerd.c,v 1.8 1999/01/15 20:00:00 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: fingerd.c,v 1.9 1999/01/15 20:33:25 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -76,6 +76,8 @@ extern int errno;
 #include "fingerd.h"
 #ifdef HAVE_LIBWRAP
 # include <tcpd.h>
+int allow_severity = LOG_DEBUG;
+int deny_severity = LOG_WARNING;
 #else
 # include "tcpd.h"			/* XXX the local one, not any system one! */
 #endif
@@ -301,7 +303,7 @@ main(argc, argv)
 		char	mline[BUFSIZ];
 
 		while (fgets(mline, sizeof(line), fp))
-			puts(mline);
+			fputs(mline, stdout);
 		puts("----");
 		fclose(fp);
 	}
