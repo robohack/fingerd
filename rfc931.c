@@ -28,6 +28,8 @@ static char sccsid[] = "@(#) rfc931.c 1.10 95/01/02 16:11:34";
 
 #include "tcpd.h"
 
+char unknown[] = STRING_UNKNOWN;	/* defined in rfc931.c */
+
 #define	RFC931_PORT	113		/* Semi-well-known port */
 #define	ANY_PORT	0		/* Any old port will do */
 
