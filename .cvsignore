@@ -1,5 +1,6 @@
 INSTALL
 Makefile
+Makefile.BSD
 Makefile.in
 aclocal.m4
 config.cache
