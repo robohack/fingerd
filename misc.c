@@ -30,7 +30,7 @@
  * misc. routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.5 1999/01/15 00:22:10 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.6 1999/01/15 17:56:18 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -127,7 +127,7 @@ err(fmt, va_alist)
 }
 #endif /* HAVE_ERR */
 
-long
+int
 execute(program, args)
 	char	*program;
 	char	**args;
@@ -138,7 +138,7 @@ execute(program, args)
 	
 	if (pipe(p) < 0) 
 		err("pipe: %s", strerror(errno));
-	switch (vfork()) {
+	switch (fork()) {
 	case 0:
 		(void) close(p[0]);
 		if (p[1] != 1) {
@@ -161,7 +161,7 @@ execute(program, args)
 	return 1;
 }
 
-long
+int
 execute_user_cmd(name, ruser, rhost)
 	char	*name;
 	char	*ruser;
@@ -178,18 +178,18 @@ execute_user_cmd(name, ruser, rhost)
 	
 
 	if (name == NULL)
-		name = strdup("[user list]");
-	if ((fp = fopen(FINGER_USERS, "r")) == NULL)
+		name = strdup("[userlist]");
+	if ((fp = fopen(FINGERD_USERS, "r")) == NULL)
 		return 0;
 	while (fgets(buf, sizeof(buf) -1, fp)) {
-		if (buf[0] == NULL || buf[0] == '#')
+		if (buf[0] == NULL || buf[0] == '#') /* ignore comments */
 			continue;
-		if ((cp = strtok(buf, "\r\n")) == NULL)
+		if ((cp = strtok(buf, "\n")) == NULL) /* trim newlines */
 			continue;
 		if (line != NULL)
 			free(line);
-		if ((line = strdup(cp)) == NULL)
-			continue;
+		if (!(line = strdup(cp)))
+			err("strdup: %s", strerror(errno));
 		if ((cp = strtok(line, ":")) == NULL)
 			continue;
 		if (strcasecmp(cp, name))
@@ -201,22 +201,25 @@ execute_user_cmd(name, ruser, rhost)
 			av[ac++] = strdup(cp);
 			while ((cp = strtok((char *) NULL, " ")) != NULL) {
 				if (!strncmp(cp, "%%", 2)) {
-					av[ac++] = strdup(cp+1);
+					if (!(av[ac++] = strdup(cp+1)))
+						err("strdup: %s", strerror(errno));
 					continue;
 				}
 				if (!strncmp(cp, "%H", 2)) {
-					av[ac++] = strdup(rhost);
+					if (!(av[ac++] = strdup(rhost)))
+						err("strdup: %s", strerror(errno));
 					continue;
 				}
 				if (!strncmp(cp, "%U", 2)) {
-					av[ac++] = strdup(ruser);
+					if (!(av[ac++] = strdup(ruser)))
+						err("strdup: %s", strerror(errno));
 					continue;
 				}
-				av[ac++] = strdup(cp);
+				if (!(av[ac++] = strdup(cp)))
+					err("strdup: %s", strerror(errno));
 			}
 			av[ac++] = NULL;
-			execute(prog, av);
-			return 1;
+			return execute(prog, av);
 		}
 	}
 	return 0;
