@@ -3,13 +3,13 @@
 #
 # Copyright (C) 1999 Planix, Inc. - All rights reserved.
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.1 1999/01/15 00:20:23 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: Makefile.BSD.in,v 1.2 1999/01/15 19:29:55 woods Exp $"
 
 # adjust these as desired:
 CPPFLAGS+= -DFINGER_PATH=\"/usr/bin/finger\"
-CPPFLAGS+= -DFINGER_MOTD=\"/etc/fingerd.motd\"
-CPPFLAGS+= -DFINGER_ACL=\"/etc/fingerd.acl\"
-CPPFLAGS+= -DFINGER_USERS=\"/etc/fingerd.users\"
+CPPFLAGS+= -DFINGERD_MOTD=\"/etc/fingerd.motd\"
+CPPFLAGS+= -DFINGERD_ACL=\"/etc/fingerd.acl\"
+CPPFLAGS+= -DFINGERD_USERS=\"/etc/fingerd.users\"
 
 BINDIR?= /usr/libexec
 
@@ -18,16 +18,19 @@ BINDIR?= /usr/libexec
 CPPFLAGS+= -DHAVE_RE_40BSD
 CPPFLAGS+= -Dwc_comp=re_comp
 CPPFLAGS+= -Dwc_exec=re_exec
-CPPFLAGS+= -DHAVE_ERR
 CPPFLAGS+= -DRETSIGTYPE=void
 CPPFLAGS+= -DSTDC_HEADERS
 CPPFLAGS+= -DTIME_WITH_SYS_TIME
+CPPFLAGS+= -DHAVE_ERR
 CPPFLAGS+= -DHAVE_ERRNO_H
+CPPFLAGS+= -DHAVE_LIBWRAP
+CPPFLAGS+= -DHAVE_MEMCPY
 CPPFLAGS+= -DHAVE_STRCHR
 CPPFLAGS+= -DHAVE_STRDUP
 CPPFLAGS+= -DHAVE_STRERROR
 CPPFLAGS+= -DHAVE_STRTOK
 CPPFLAGS+= -DHAVE_STRING_H
+CPPFLAGS+= -DHAVE_SYS_CDEFS_H
 CPPFLAGS+= -DHAVE_SYS_TYPES_H
 CPPFLAGS+= -DHAVE_SYS_WAIT_H
 CPPFLAGS+= -DHAVE_UNISTD_H
@@ -37,12 +40,20 @@ CPPFLAGS+= -DVERSION=\"@VERSION@\"
 
 LDADD+=	-lcompat -lwrap
 
-PROG= fingerd
+PROG=	fingerd
 
-SRCS=	fingerd.c access.c misc.c version.c
+SRCS=	fingerd.c access.c misc.c version.c wildcard.c
 
 MAN= fingerd.8
 
+FFILES=	${.CURDIR}/samples/fingerd.acl \
+	${.CURDIR}/samples/fingerd.motd \
+	${.CURDIR}/samples/fingerd.users
+
 WARNS?= 0
+
+distribution:
+	cd ${.CURDIR}/samples; \
+		${INSTALL} -c -o root -g wheel -m 644 ${FFILES} ${DESTDIR}/etc
 
 .include <bsd.prog.mk>
