@@ -1,0 +1,9 @@
+- Think of some way to safely allow users to specify that they don't
+  want to be fingered in case the local finger command doesn't support
+  this usage (commonly done with "~/.nofinger", but in that case treat a
+  closed home-dir as if the file was present -- remember, we should be
+  running as nobody).
+
+- possibly add a REJECT or similar pseudo-command for fingerd.users
+
+#ident "@(#)fingerd:$Name:  $:$Id: ToDo,v 1.1 2000/12/02 04:31:14 woods Exp $"
