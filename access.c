@@ -30,7 +30,7 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.11 1999/01/17 04:08:25 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.12 2000/12/02 03:53:53 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -97,7 +97,7 @@ access_check(user, host)
 #endif
 		return ACCESS_DENIED;
 	}
-	if (!(fp = fopen(conf_file_path("fingerd.acl"), "r"))) {
+	if (!(fp = fopen(conf_file_path(FINGERD_ACCESS_FILE), "r"))) {
 #ifdef DEBUG
 		if (debug)
 			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));

@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.11 1999/01/17 04:27:24 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.12 2000/12/02 03:53:54 woods Exp $"
 
 /*
  * misc. routines
@@ -191,10 +191,10 @@ execute_user_cmd(name, ruser, rhost)
 	char           *av[BUFSIZ];
 
 	if (name == NULL) {
-		if (!(name = strdup("[userlist]")))
+		if (!(name = strdup(NO_USER_SPECIFIED)))
 			err("strdup: no memory - %s", strerror(errno));
 	}
-	if ((fp = fopen(conf_file_path("fingerd.users"), "r")) == NULL) {
+	if ((fp = fopen(conf_file_path(FINGERD_USERS_FILE), "r")) == NULL) {
 #ifdef DEBUG
 		if (debug)
 			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));

@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.10 1999/01/17 04:08:26 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.11 2000/12/02 03:53:53 woods Exp $"
 
 #ifndef FINGERD_SYSLOG_FACILITY
 # define FINGERD_SYSLOG_FACILITY LOG_DAEMON /* default syslog facility */
@@ -63,6 +63,15 @@ extern char    *confdir;
 extern char     version[];
 
 #define NO_IDENT_DONE		"[no-ident]"
+#define NO_USER_SPECIFIED	"[userlist]"
+
+/*
+ * these files are found in confdir, by default PATH_SYSCONFDIR.
+ * See misc.c:conf_file_path() for more info.
+ */
+#define FINGERD_ACCESS_FILE	"fingerd.acl"
+#define FINGERD_MOTD_FILE	"fingerd.motd"
+#define FINGERD_USERS_FILE	"fingerd.users"
 
 #include <sys/cdefs.h>
 

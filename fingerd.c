@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.12 1999/01/17 04:08:26 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.13 2000/12/02 03:53:53 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -191,7 +191,7 @@ main(argc, argv)
 	if (doident || forceident) {
 		char idreply[STRING_LENGTH + 1];
 
-		rfc931(&sin, &laddr, idreply);
+		rfc931((struct sockaddr *) &sin, (struct sockaddr *) &laddr, idreply);
 		if (!(ruser = strdup(idreply)))
 			err("strdup: no memory - %s", strerror(errno));
 	} else {
@@ -307,7 +307,7 @@ main(argc, argv)
 		exit(1);
 		/* NOTREACHED */
 	}
-	if ((fp = fopen(conf_file_path("fingerd.motd"), "r"))) {
+	if ((fp = fopen(conf_file_path(FINGERD_MOTD_FILE), "r"))) {
 		char	mline[BUFSIZ];
 
 		while (fgets(mline, sizeof(line), fp))
