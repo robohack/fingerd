@@ -2,7 +2,7 @@
  * a much hacked version that's useful with just rfc931.c
  */
 
-#ident	"@(#)$Name:  $:$Id: tcpd.h,v 1.3 1999/01/15 19:51:41 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: tcpd.h,v 1.4 1999/01/17 02:01:16 woods Exp $"
 
 #define RFC931_TIMEOUT	10		/* seconds */
 #define STRING_LENGTH	128		/* as per tcp_wrappers 7.6 */

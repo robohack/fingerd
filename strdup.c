@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ident	"@(#)$Name:  $:$Id: strdup.c,v 1.2 1999/01/15 19:39:37 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: strdup.c,v 1.3 1999/01/17 02:01:16 woods Exp $"
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)strdup.c	8.1 (Berkeley) 6/4/93";

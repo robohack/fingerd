@@ -3,7 +3,7 @@
 #
 # Copyright (C) 1999 Planix, Inc. - All rights reserved.
 #
-#ident	"@(#)$Name:  $:$Id: Makefile.BSD.in,v 1.2 1999/01/15 19:29:55 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.BSD.in,v 1.3 1999/01/17 02:01:14 woods Exp $"
 
 # adjust these as desired:
 CPPFLAGS+= -DFINGER_PATH=\"/usr/bin/finger\"

@@ -21,7 +21,7 @@
 .\" all ideas to the authors.  This software will be maintained and
 .\" enhanced as deemed necessary by the community.
 .\"
-.\"#ident	"@(#)$Name:  $:$Id: fingerd.8.in,v 1.7 1999/01/17 01:09:43 woods Exp $"
+.\"ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.8 1999/01/17 02:01:15 woods Exp $"
 .\"
 .Dd January 16, 1999
 .Os NetBSD 1.3I

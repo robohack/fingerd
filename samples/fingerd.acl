@@ -1,7 +1,7 @@
 #
 #	fingerd access control list
 #
-#ident	"@(#)$Name:  $:$Id: fingerd.acl,v 1.1 1999/01/17 01:07:44 woods Exp $"
+#ident	"@(#)fingerd/samples:$Name:  $:$Id: fingerd.acl,v 1.2 1999/01/17 02:01:17 woods Exp $"
 #
 #    none          deny all access.
 #    forward       allow forwarding of finger requests (same as -f).

@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: fingerd.c,v 1.10 1999/01/17 01:21:59 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.11 1999/01/17 02:01:15 woods Exp $"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

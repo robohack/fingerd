@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: fingerd.h,v 1.8 1999/01/17 01:15:27 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.9 1999/01/17 02:01:15 woods Exp $"
 
 #ifndef FINGERD_SYSLOG_FACILITY
 # define FINGERD_SYSLOG_FACILITY LOG_DAEMON /* default syslog facility */

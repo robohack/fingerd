@@ -29,7 +29,7 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)$Name:  $:$Id: misc.c,v 1.8 1999/01/17 01:20:52 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.9 1999/01/17 02:01:15 woods Exp $"
 
 /*
  * misc. routines

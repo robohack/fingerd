@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)$Name:  $:$Id: Makefile.am,v 1.9 1999/01/17 01:49:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.10 1999/01/17 02:01:14 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
