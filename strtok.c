@@ -31,9 +31,10 @@
  * SUCH DAMAGE.
  */
 
+#ident	"@(#)$Name:  $:$Id: strtok.c,v 1.2 1999/01/15 19:51:41 woods Exp $"
+
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strtok.c	5.8 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strtok.c,v 1.1 1997/04/07 18:44:22 woods Exp $";
+static char *sccsid = "from: @(#)strtok.c	5.8 (Berkeley) 2/24/91";
 #endif /* LIBC_SCCS and not lint */
 
 #include <string.h>

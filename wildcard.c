@@ -30,7 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: wildcard.c,v 1.5 1999/01/15 18:09:20 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: wildcard.c,v 1.6 1999/01/15 19:51:41 woods Exp $"
 
 #ifndef lint
 static char copyright[] =

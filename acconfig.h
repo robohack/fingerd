@@ -1,4 +1,4 @@
-#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.4 1999/01/15 18:09:56 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: acconfig.h,v 1.5 1999/01/15 19:51:41 woods Exp $"
 
 @TOP@
 

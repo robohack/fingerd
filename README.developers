@@ -136,4 +136,4 @@ it is finally officially released.
 NOTE:  This file *is* included in distributions so that users and
 contributors can see how all the release magic works!
 
-#ident	   "@(#)newsyslog:$Name:  $:$Id: README.developers,v 1.1 1999/01/14 23:20:43 woods Exp $"
+#ident	   "@(#)$Name:  $:$Id: README.developers,v 1.2 1999/01/15 19:51:41 woods Exp $"

@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.6 1999/01/15 18:12:13 woods Exp $"
+#ident	"@(#)$Name:  $:$Id: Makefile.am,v 1.7 1999/01/15 19:51:40 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -32,7 +32,6 @@ FLAGS_TO_PASS = \
 ##
 ##	local extensions to automake
 ##
-
 
 #
 # Used below in special install-symlinks hooks
