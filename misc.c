@@ -30,9 +30,11 @@
  * misc. routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.4 1997/04/07 18:44:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: misc.c,v 1.5 1999/01/15 00:22:10 woods Exp $"
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <sys/types.h>
 
@@ -74,6 +76,8 @@ extern int errno;
 /*
  * this should be selected by GNU autoconf....
  */
+#ifndef HAVE_ERR
+
 #if defined(__STDC__)
 # if (__STDC__ - 0) > 0				/* just to be sure! */
 #  define HAVE_VPRINTF		1
@@ -121,6 +125,7 @@ err(fmt, va_alist)
 	(void) syslog(LOG_ERR, buf);
 	exit(1);
 }
+#endif /* HAVE_ERR */
 
 long
 execute(program, args)

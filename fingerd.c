@@ -30,9 +30,11 @@
  * fingerd main loop
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.6 1997/09/15 00:42:51 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.7 1999/01/15 00:22:10 woods Exp $"
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #ifdef STDC_HEADERS
 # include <stdlib.h>

@@ -30,9 +30,11 @@
  * fingerd access check routines
  */
  
-#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.5 1997/09/12 19:24:17 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: access.c,v 1.6 1999/01/15 00:22:09 woods Exp $"
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <sys/types.h>
 #include <stdio.h>

@@ -1,4 +1,7 @@
-#ident	"@(#)fingerd:$Name:  $:$Id: version.c,v 1.2 1997/04/07 18:44:23 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: version.c,v 1.3 1999/01/15 00:22:10 woods Exp $"
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 char version[] = VERSION;
