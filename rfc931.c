@@ -9,7 +9,7 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: rfc931.c,v 1.7 1999/01/17 02:01:15 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: rfc931.c,v 1.8 2000/12/02 17:32:39 woods Exp $"
 
 #ifndef lint
 static char sccsid[] = "@(#) rfc931.c 1.10 95/01/02 16:11:34";
@@ -50,11 +50,11 @@ int     protocol;
     FILE   *fp;
 
     if ((s = socket(domain, type, protocol)) < 0) {
-	tcpd_warn("socket: %m");
+	tcpd_warn("socket(): %m");
 	return (0);
     } else {
 	if ((fp = fdopen(s, "r+")) == 0) {
-	    tcpd_warn("fdopen: %m");
+	    tcpd_warn("fdopen(): %m");
 	    close(s);
 	}
 	return (fp);
@@ -122,10 +122,12 @@ char   *dest;
 	    rmt_query_sin.sin_port = htons(RFC931_PORT);
 
 	    if (bind(fileno(fp), (struct sockaddr *) & our_query_sin,
-		     sizeof(our_query_sin)) >= 0 &&
-		connect(fileno(fp), (struct sockaddr *) & rmt_query_sin,
-			sizeof(rmt_query_sin)) >= 0) {
-
+		     sizeof(our_query_sin)) < 0) {
+		tcpd_warn("bind(): %m");
+	    } else if (connect(fileno(fp), (struct sockaddr *) & rmt_query_sin,
+			       sizeof(rmt_query_sin)) < 0) {
+		tcpd_warn("connect(): %m");
+	    } else {
 		/*
 		 * Send query to server. Neglect the risk that a 13-byte
 		 * write would have to be fragmented by the local system and
