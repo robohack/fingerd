@@ -1,4 +1,4 @@
-#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.2 1997/04/07 18:44:05 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: acconfig.h,v 1.3 1997/09/15 00:39:04 woods Exp $"
 
 @TOP@
 
@@ -7,9 +7,6 @@
 
 /* The package release identifier. */
 #define VERSION	"Pre-release"
-
-/* the fully qualified $sbindir */
-#define FQSBINDIR		"/usr/local/sbin"
 
 /* path to the finger program */
 #define FINGER_PATH		"/usr/bin/finger"
