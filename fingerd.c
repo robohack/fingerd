@@ -31,7 +31,7 @@
  */
  
 #ifndef lint
-static char rcsid[] = "$Id: fingerd.c,v 1.1 1995/08/09 18:35:20 woods Exp $";
+static char rcsid[] = "$Id: fingerd.c,v 1.2 1995/08/11 21:25:21 woods Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -52,7 +52,9 @@ extern	char	*optarg;
 extern	int	optind, opterr;
 
 int
-main(int argc, char *argv[])
+main(argc, argv)
+	int             argc;
+	char           *argv[];
 {
 	struct		hostent		*hp;
 	struct		sockaddr_in	sin, laddr;
@@ -134,8 +136,7 @@ main(int argc, char *argv[])
 		if ((hp = gethostbyname(rhost)) == NULL) {
 			if (forceresolv) {
 				syslog(LOG_NOTICE,
-				       "from=[unknown]@%s to=[unknown] "
-				       "stat=Cannot re-resolve %s (%s)",
+				       "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
 				       rhost, rhost, inet_ntoa(sin.sin_addr));
 				puts("Cannot resolve hostname");
 				exit(1);
@@ -152,12 +153,9 @@ main(int argc, char *argv[])
 			}
 			if (!match) {
 				syslog(LOG_NOTICE,
-				       "from=[unknown]@%s to=[unknown] "
-				       "stat=Address %s does not resolve to "
-				       "%s (%s).", rhost,
-				       inet_ntoa(sin.sin_addr), hp->h_name);
-				printf("Name server mis-configuration. "
-				       "You are not really on %s is not %s.\n",
+				       "from=[unknown]@%s to=[unknown] stat=Address %s does not resolve to %s (%s).",
+				       rhost, inet_ntoa(sin.sin_addr), hp->h_name);
+				printf("Name server mis-configuration.  You are not really on %s is not %s.\n",
 				       inet_ntoa(sin.sin_addr), hp->h_name);
 				exit(1);
 			}
@@ -165,9 +163,8 @@ main(int argc, char *argv[])
 
 	} else {
 		if (forceresolv) {
-			syslog(LOG_NOTICE, "from=[unknown]@%s to=[unknown] "
-			       "stat=Cannot re-resolve %s (%s)", rhost,
-				rhost, inet_ntoa(sin.sin_addr));
+			syslog(LOG_NOTICE, "from=[unknown]@%s to=[unknown] stat=Cannot re-resolve %s (%s)",
+			       rhost, rhost, inet_ntoa(sin.sin_addr));
 			puts("Cannot resolve hostname");
 			exit(1);
 		}

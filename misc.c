@@ -32,32 +32,72 @@
  
 
 #ifndef lint
-static char rcsid[] = "$Id: misc.c,v 1.1 1995/08/09 18:35:20 woods Exp $";
+static char rcsid[] = "$Id: misc.c,v 1.2 1995/08/11 21:25:24 woods Exp $";
 #endif /* not lint */
 
 #include	<sys/types.h>
 #include	<errno.h>
 #include	<stdio.h>
-#include	<stdarg.h>
 #include	<syslog.h>
 #include	<string.h>
 #include	<unistd.h>
 #include	"fingerd.h"
 
+/*
+ * this should be selected by GNU autoconf....
+ */
+#if defined(__STDC__)
+# if (__STDC__ - 0) > 0				/* just to be sure! */
+#  define HAVE_VPRINTF		1
+# endif
+#else
+# define HAVE_VPRINTF		1		/* use GNU autoconf! */
+#endif
+
+#ifdef HAVE_VPRINTF
+# if (__STDC__ - 0) > 0
+#  include	<stdarg.h>
+#  define VA_START(args, lastarg)	va_start(args, lastarg)
+# else
+#  include	<varargs.h>
+#  define VA_START(args, lastarg)	va_start(args)
+# endif
+#else
+# define va_alist	a1, a2, a3, a4, a5, a6, a7, a8, a9
+# define va_dcl		char *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, a9;
+#endif
+
+/* VARARGS */
+#if defined(HAVE_VFPRINTF) && ((__STDC__ - 0) > 0)
 void
 err(const char *fmt, ...)
+#else
+void
+err(fmt, va_alist)
+	char *fmt;
+	va_dcl
+#endif
 {
 	char	buf[BUFSIZ*2];
-	va_list	ap;
-	va_start(ap, fmt);
+#ifdef HAVE_VPRINTF
+	va_list ap;
+#endif
+
+#ifdef HAVE_VPRINTF
+	VA_START(ap, message);
 	(void) vsprintf(buf, fmt, ap);
-	(void) syslog(LOG_ERR, buf);
 	va_end(ap);
+#else
+	sprintf(buf, fmt, va_alist);
+#endif
+	(void) syslog(LOG_ERR, buf);
 	exit(1);
 }
 
 long
-execute(char *program, char **args)
+execute(program, args)
+	char	*program;
+	char	**args;
 {
 	int	p[2],
 		ch;
@@ -89,7 +129,10 @@ execute(char *program, char **args)
 }
 
 long
-execute_user_cmd(char *name, char *ruser, char *rhost)
+execute_user_cmd(name, ruser, rhost)
+	char	*name;
+	char	*ruser;
+	char	*rhost;
 {
 
 	FILE	*fp;

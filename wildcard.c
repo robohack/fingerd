@@ -56,7 +56,8 @@ static char	*longerr = "Wildcard expression too long",
 		buf[WC_MAX] = { CEND };
 
 char	*
-wc_comp(char *s)
+wc_comp(s)
+	char	*s;
 {
 	char	*p,
 		*x,
@@ -161,7 +162,9 @@ wc_comp(char *s)
 }
 
 static int
-wc_subexec(char *s, char *p)
+wc_subexec(s, p)
+	char	*s;
+	char	*p;
 {
 	int	i,
 		n;
@@ -219,7 +222,8 @@ wc_subexec(char *s, char *p)
 }
 
 int
-wc_exec(char *s)
+wc_exec(s)
+	char *s;
 {
 	if (buf[0] == CEND)
 		return -1;

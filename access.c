@@ -31,7 +31,7 @@
  */
  
 #ifndef lint
-static char rcsid[] = "$Id: access.c,v 1.1 1995/08/09 18:35:20 woods Exp $";
+static char rcsid[] = "$Id: access.c,v 1.2 1995/08/11 21:25:18 woods Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -44,7 +44,9 @@ static char rcsid[] = "$Id: access.c,v 1.1 1995/08/09 18:35:20 woods Exp $";
 #include "fingerd.h"
 
 unsigned long
-access_check(char *user, char *host)
+access_check(user, host)
+	char           *user;
+	char           *host;
 {
 
 	FILE		*fp;
