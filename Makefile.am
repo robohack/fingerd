@@ -1,7 +1,7 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.10 1999/01/17 02:01:14 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.11 2000/12/02 03:49:35 woods Exp $"
 
 AUTOMAKE_OPTIONS = gnits no-dependencies cvs cvs-testbuild dist-tarZ
 MAINT_CHARSET = latin1
@@ -23,11 +23,6 @@ fingerd_LDADD = @LIBOBJS@
 man_MANS = fingerd.8
 
 INCLUDES = -I.
-
-FLAGS_TO_PASS = \
-	'CC=$(CC)' \
-	'CFLAGS=$(CFLAGS)' \
-	'LDFLAGS=$(LDFLAGS)'
 
 # Mention here files which are created using '--add-missing'
 MAINTAINERCLEANFILES = install-sh missing mkinstalldirs INSTALL README.developers
