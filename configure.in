@@ -2,22 +2,31 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
 
-AC_INIT(fingerd.c)
-AC_PREREQ(2.12)dnl Required Autoconf version.
 
-AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.23 2000/12/02 18:18:32 woods Exp $"])dnl
+AC_INIT([fingerd], [1.4.0.80-Preview], [fingerd-bugs@planix.ca])
+AM_INIT_AUTOMAKE([])
 
-PACKAGE="fingerd"
-VERSION="1.4.0.80-Preview"
+AC_PREREQ(2.60)dnl Required Autoconf version.
 
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
+AC_REVISION([#ident "@(#)fingerd:$Name:  $:$Id: configure.in,v 1.24 2019/01/26 22:37:32 woods Exp $"])dnl
+
+dnl AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+dnl AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+dnl AC_SUBST(PACKAGE)
+dnl AC_SUBST(VERSION)
+
+# Check that we're using a build directory, and are not building in
+# between the source. It is cleaner that way.
+# Configure has already set up $srcdir to be equal to . if it detected
+# an in-tree build.
+if test "$srcdir" = "."; then
+   AC_MSG_ERROR([Please create a temporary (sub)directory to build in. You can call this configure script using a absolute or relative path from there.])
+fi 
 
 AM_SANITY_CHECK
 
-AC_ARG_PROGRAM
+dnl not needed with newer autoconf???  automatically invoked somewhere else...
+dnl AC_ARG_PROGRAM
 
 AM_CONFIG_HEADER(config.h)
 
@@ -72,7 +81,7 @@ fi
 AC_MSG_CHECKING(path to system daemons)
 if test -z "$syslibexecdir" ; then
 	AC_MSG_WARN(cannot find original system fingerd)
-	syslibexecdir=NO_EXEC_DIR	
+	syslibexecdir=NO_EXEC_DIR
 else
 	AC_MSG_RESULT($syslibexecdir)
 fi
@@ -81,7 +90,8 @@ AC_SUBST(syslibexecdir)
 dnl Try to get a POSIX.1 environment.
 dnl we need to call these system-specific macros early...
 AC_AIX
-AC_MINIX
+dnl this causes all kinds of commotion!
+dnl AC_MINIX
 AC_ISC_POSIX
 
 dnl Checks for libraries.
@@ -108,7 +118,8 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_REPLACE_FUNCS(strdup strerror strtok)
 
-AC_CHECK_FUNCS(inet_ntoa memcpy syslog socket strchr)
+AC_CHECK_FUNCS(inet_ntoa memcpy syslog socket strchr re_comp)
+
 dnl NOTE: -lsocket must come first, so since socket() is in libsocket...
 if test $ac_cv_func_socket = no; then
 	# socket is not in the default libraries.  See if it's in some other.
@@ -120,6 +131,7 @@ fi
 if test $ac_cv_func_socket = no; then
 	AC_MSG_ERROR(the socket function cannot be found)
 fi
+
 if test $ac_cv_func_syslog = no; then
 	# syslog is not in the default libraries.  See if it's in some other.
 	# XXX We could possibly use fakelog.c from tcp_wrappers too, but if
@@ -133,6 +145,7 @@ fi
 if test $ac_cv_func_syslog = no; then
 	AC_MSG_ERROR(the syslog function cannot be found)
 fi
+
 if test $ac_cv_func_inet_ntoa = no; then
 	# inet_ntoa is not in the default libraries.  See if it's in some other.
 	for lib in bsd socket inet nsl; do
@@ -142,6 +155,17 @@ if test $ac_cv_func_inet_ntoa = no; then
 fi
 if test $ac_cv_func_inet_ntoa = no; then
 	AC_MSG_ERROR(the inet_ntoa function cannot be found)
+fi
+
+if test $ac_cv_func_re_comp = no; then
+	# re_comp (and probably re_exec) is not in the default libraries.  See if it's in some other.
+	for lib in compat; do
+		AC_CHECK_LIB($lib, re_comp, [AC_DEFINE(HAVE_RE_COMP)
+			ac_cv_func_re_comp=yes; LIBS="$LIBS -l$lib"; break])
+	done
+fi
+if test $ac_cv_func_re_comp = no; then
+	AC_MSG_ERROR(the re_comp function cannot be found)
 fi
 
 dnl this is a horrible hack necessary because configure does not

@@ -1,9 +1,10 @@
 #
 #	Makefile.am - input for automake
 #
-#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.14 2000/12/02 18:10:02 woods Exp $"
+#ident	"@(#)fingerd:$Name:  $:$Id: Makefile.am,v 1.15 2019/01/26 22:37:32 woods Exp $"
 
-AUTOMAKE_OPTIONS = gnu no-dependencies cvs cvs-testbuild dist-tarZ
+# cvs cvs-testbuild
+AUTOMAKE_OPTIONS = gnu no-dependencies dist-tarZ
 MAINT_CHARSET = latin1
 
 SUBDIRS = samples
@@ -20,7 +21,7 @@ man_MANS = fingerd.8
 catman_MANS = fingerd.cat8
 psman_MANS = fingerd.ps8
 
-INCLUDES = -I.
+AM_CPPFLAGS = -I.
 
 # things that exist in the repository
 DIST_OTHER = \
