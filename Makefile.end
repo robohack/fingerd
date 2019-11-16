@@ -1,0 +1,97 @@
+# -*- makefile-bsdmake -*-
+#
+#	This should be included at the top of your Makefile
+#
+# Copyright (C) 2019 Greg A. Woods - This work is licensed under the Creative
+# Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
+# the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
+# send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
+#
+
+# The rest is just default boilerplate for stand-alone builds....
+#
+# Yes, "make obj" is forced -- it is stupid to build in the source directory)
+# (forcing "make depend" is also good, though a bit of a waste for pkgsrc.
+#
+# Note with "bmake" this will cause obj* directories to be created in the
+# existing obj* directories the second time around...
+#
+
+# XXX this is a very crude hack -- but the only real fix is probably to wait for
+# everyone to pick up support for MKOBJDIRS=auto...
+#
+bmake-test-obj: .PHONY
+	@if [ $$(pwd) = ${.CURDIR:Q} -a ! -z ${MAKEOBJDIRPREFIX:Q} -a ! -d ${MAKEOBJDIRPREFIX:Q} ]; then echo "You must create ${MAKEOBJDIRPREFIX}!"; false; fi
+
+# XXX because simple projects use <bsd.prog.mk> at a top level, we must have the
+# ${.OBJDIR} present __BEFORE__ make is run since make will try to chdir(2) to
+# ${.OBJDIR} before doing anything else, but if that doesn't exist then it will
+# simply stay in ${.CURDIR} to run commands...
+#
+bmake-test-obj-again: .PHONY bmake-do-obj
+	@if [ $$(pwd) = ${.CURDIR:Q} ]; then echo "${MAKEOBJDIRPREFIX}${.OBJDIR} not yet present, try again"; false; fi
+
+.for targ in ${BUILDTARGETS:S/.WAIT//g}
+${targ}: .PHONY ${targ:S/bmake-do-//}
+.endfor
+
+# most implementations do not make 'regress' depend on first building everything
+# but we need to build everything before we can do any testing
+#
+regress: .PHONY all
+
+# For stand-alone build & install we will also need to make the installation
+# directories:
+#
+bmake_install_dirs += ${BINDIR}
+bmake_install_dirs += ${INCSDIR}
+bmake_install_dirs += ${LIBDIR}
+bmake_install_dirs += ${PKGCONFIGDIR}
+# the DEBUGDIR ones could/should maybe depend on MKDEBUGLIB
+bmake_install_dirs += ${DEBUGDIR}
+bmake_install_dirs += ${DEBUGDIR}/${PREFIX}/bin
+bmake_install_dirs += ${DOCDIR}/${PACKAGE}
+bmake_install_dirs += ${MANDIR}
+bmake_install_dirs += ${MANDIR}/man1
+# (in general though it is safest to always make them all)
+
+beforeinstall: _bmake_install_dirs
+
+# many BSD system mk files will not make directories on demand
+_bmake_install_dirs: .PHONY
+.for instdir in ${bmake_install_dirs}
+	${INSTALL} -d ${DESTDIR}${instdir}
+.endfor
+
+afterinstall: .PHONY install-docs
+
+install-docs: .PHONY beforeinstall .WAIT docs
+.for docfile in ${DOCS}
+	cp ${.CURDIR:Q}/${docfile} ${DESTDIR}${SHAREDIR}/doc/${PACKAGE}/
+.endfor
+	-cp -R $(MAKEOBJDIRPREFIX:Q)/man ${DESTDIR}${SHAREDIR}/
+
+.include "${.CURDIR}/Makefile.compiler"
+
+#SRCINSTDIR ?=	${BSDSRCDIR}/${BINDIR:S/\//./g}
+SRCINSTDIR ?=	${BSDSRCDIR}/libexec
+#SRCUPDATEDIR?=	${SRCINSTDIR}/${.CURDIR:C/.*\///}
+SRCUPDATEDIR ?=	${SRCINSTDIR}/${PACKAGE_NAME}
+
+RCS_ID_EDITS =	-E -e 's/\$$Name: ([^$$]*)\$$/\1/' \
+		-e 's/\$$Id: ([^$$]*)\$$/\1/'
+
+${PACKAGE_NAME}-to-netbsd: .PHONY ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
+	${INSTALL_DIR} ${SRCUPDATEDIR}
+.for _file_ in ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
+	rm -f ${SRCUPDATEDIR}/${_file_}
+	sed ${RCS_ID_EDITS} < ${_file_} > ${SRCUPDATEDIR}/${_file_}
+	chmod ${FILESMODE} ${SRCUPDATEDIR}/${_file_}
+.endfor
+
+#
+# Local Variables:
+# eval: (make-local-variable 'compile-command)
+# compile-command: (concat "mkdir -p obj; " (default-value 'compile-command))
+# End:
+#

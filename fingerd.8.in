@@ -1,5 +1,5 @@
 .\" Copyright 1994 Michael Shanzer.  All rights reserved.
-.\" Copyright 1999 Greg A. Woods <woods@planix.com>.  All rights reserved.
+.\" Copyright 1999-2019 Greg A. Woods <woods@planix.com>.  All rights reserved.
 .\"
 .\" Permission is granted to anyone to use this software for any purpose on
 .\" any computer system, and to alter it and redistribute it freely, subject
@@ -21,10 +21,14 @@
 .\" all ideas to the authors.  This software will be maintained and
 .\" enhanced as deemed necessary by the community.
 .\"
-.\"ident	"@(#)fingerd:$Name:  $:$Id: fingerd.8.in,v 1.8 1999/01/17 02:01:15 woods Exp $"
+.\"		Michael S. Shanzer
+.\" 		shanzer@foobar.com
 .\"
-.Dd January 16, 1999
-.Os NetBSD 1.3I
+.\"		Greg A. Woods
+.\" 		woods@planix.com
+.\"
+.Dd Nov 15, 2019
+.Os NetBSD
 .Dt FINGERD 8 SMM
 .\"
 .Sh NAME
@@ -56,27 +60,30 @@ listing the users of the system at the moment, or an in-depth report of
 information about a particular user.
 .Pp
 .Nm
-is started by
+is designed to be started by
 .Xr inetd 8 ,
-which is normally configured to listen for connections on
-.Tn TCP
-port 79.  Once a client has connected the connection is handed to
+which is normally configured to start
 .Nm
-which reads a single command line terminated by
+when a client opens a connection to
+.Tn TCP
+port #79.
+.Nm
+reads a single
 .Tn ASCII
-carriage-return and linefeed characters.
+carriage-return and linefeed terminated command line from the client.
 .Pp
 .Nm
 uses an access control file (see below) to see if user listings from the
-originating host (and user) are permitted, and what permissions are
-granted to the client host (and user).  If user listings are allowed,
-and if the request sepcifies a user name
+originating host (and optionally the originating user) are permitted,
+and what permissions are granted to the client host (and user).  If user
+listings are allowed, and if the request sepcifies a user-name
 .Nm
 checks to see if that user-name is listed in a users file (see below).
-If the requested user name is listed in this file, the program specified
-for that user-name is run.  Otherwise the
+If the requested user name is listed in the users file then the program
+specified for that user-name is run.  Otherwise the
 .Xr finger 1
-program is run with the appropriate options.
+program is run with the appropriate options.  Output from whichever
+program is run is passed back to to the client.
 .\"
 .Sh OPTIONS
 .Bl -tag -width "-c confdir"
@@ -332,7 +339,7 @@ command first appeared in
 This version of
 .Nm
 is known separately as
-.Dq Em "$Name:  $" .
+.Dq Em "@PACKAGE_NAME@ @PACKAGE_VERSION@" .
 .\"
 .Sh AUTHORS
 .\" See also the THANKS file when updating this list....
@@ -382,7 +389,7 @@ use
 .Dq Li "fingerd -fslu" .
 .Pp
 Trusting
-.Tm "RFC 1413"
+.Tn "RFC 1413"
 and similar
 .Dq ident
 protocol results is a silly thing to do, especially for hosts you don't directly
@@ -427,7 +434,8 @@ from attempting to find a matching user name.  Administrators can also
 prevent the display of user office locations and phone numbers by using
 the
 .Fl g
-option.
+option.  We second these recommendations if access is not restricted to
+trusted clients and networks.
 .Pp
 .Tn "RFC 1288"
 suggests that
@@ -437,10 +445,12 @@ servers should not send the contents of
 .Dq "user information files"
 and this can be prevented on most systems by using the
 .Fl p
-option.
+option.  We second this recommendation if access is not restricted to
+trusted clients and networks.
 .Pp
-The ability to execute arbitrary programs is very dangerous and should
-be used
+The ability to execute arbitrary programs via
+.Fl P
+is very dangerous and should be used
 .Em only
-with great care, especially since it's also possible to pass information
-gathered from the network to these programs.
+with very great care, especially since it's also possible to pass
+information gathered from the network to these programs.

@@ -1,6 +1,6 @@
 /*
  * Copyright 1994 Michael Shanzer.  All rights reserved.
- * Copyright 2000 Greg A. Woods <woods@planix.com.  All rights reserved.
+ * Copyright 2000-2019 Greg A. Woods <woods@planix.com.  All rights reserved.
  *
  * Permission is granted to anyone to use this software for any purpose on any
  * computer system, and to alter it and redistribute it freely, subject to the
@@ -22,72 +22,41 @@
  * software is going to be maintained and enhanced as deemed necessary by the
  * community.
  *
- *              Michael S. Shanzer
- *  		shanzer@foobar.com
+ *		Michael S. Shanzer
+ *		shanzer@foobar.com
  *
- *              Greg A. Woods
- *  		woods@planix.com
+ *		Greg A. Woods
+ *		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.c,v 1.14 2000/12/02 17:32:20 woods Exp $"
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#else
-extern void exit ();
-extern char *getenv();
-#endif
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
-# include <string.h>
-#else
-# ifndef HAVE_STRCHR
-#  define strchr index
-#  define strrchr rindex
-# endif
-# include <strings.h>
-extern char *strchr(), *strrchr(), *strtok();
-#endif
-
-#ifdef HAVE_ERRNO_H
-# include <errno.h>
-#else
-# ifndef errno
-extern int errno;
-# endif /* !errno */
-#endif /* HAVE_ERRNO_H */
-
 #include <sys/types.h>
+#include <ctype.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <syslog.h>
 #include <netdb.h>
-#include <stdio.h>
+#include <tcpd.h>
 
 #include "fingerd.h"
-#ifdef HAVE_LIBWRAP
-# include <tcpd.h>
-int allow_severity = LOG_DEBUG;
-int deny_severity = LOG_WARNING;
-#else
-# include "tcpd.h"			/* XXX the local one, not any system one! */
-#endif
 
-char           *argv0 = PACKAGE;
-char           *confdir = PATH_SYSCONFDIR;
+char           *argv0 = PACKAGE_NAME;
+char           *confdir = _PATH_SYSCONFDIR;
 
 extern char    *optarg;
 extern int      optind;
 extern int      opterr;
+
+static void usage __P((void));
+
+int main __P((int, char *[]));
 
 int
 main(argc, argv)
@@ -100,105 +69,130 @@ main(argc, argv)
 	unsigned long	perm = ACCESS_GRANTED;
 	FILE           *fp;
 	char           *lp;
-	int             logging = FALSE;
-	int             forward = FALSE;
-	int             nogecos = FALSE;
-	int             nohome = FALSE;
-	int             nolist = FALSE;
-	int             noplan = FALSE;
-	int             showhost = FALSE;
-	int             doident = FALSE;
-	int             forceident = FALSE;
-	int             forceresolv = FALSE;
-	int             forceshort = FALSE;
-	int             defaultshort = FALSE;
-	int             nomatch = FALSE;
+	bool            eightbit = false;
+	bool            logging = false;
+	bool            forward = false;
+	bool            nogecos = false;
+	bool            nohome = false;
+	bool            nolist = false;
+	bool            noplan = false;
+	bool            showhost = false;
+	bool            doident = false;
+	bool            forceident = false;
+	bool            forceresolv = false;
+	bool            forceshort = false;
+	bool            defaultshort = false;
+	bool            nomatch = false;
 	int             ac = 1;
 	int             ch;
-	int             sval;
+	socklen_t       sval;
 	char           *ap;
-	char           *prog;
+	char           *prog_finger;
 	char           *rhost;
 	char           *ruser = NULL;
 	char            line[BUFSIZ];
 	char           *av[BUFSIZ];
 
 	argv0 = (argv0 = strrchr(argv[0], '/')) ? argv0 + 1 : argv[0];
-	prog = PATH_FINGER;
-	openlog(argv0, LOG_PID, FINGERD_SYSLOG_FACILITY);
+	prog_finger = _PATH_FINGER;
+	openlog(argv0, LOG_PID | LOG_PERROR, FINGERD_SYSLOG_FACILITY);
+	optind = 1;		/* Start options parsing */
 	opterr = 0;
-	while ((ch = getopt(argc, argv, "bc:fghiIlmpP:rsSuV")) != EOF) {
+	while ((ch = getopt(argc, argv, "8bc:fghiIlmpP:rsSuV")) != EOF) {
 		switch (ch) {
+		case '8':
+			eightbit = true;
+			break;
 		case 'b':
-			nohome = TRUE;
+			nohome = true;
 			break;
 		case 'c':
 			confdir = optarg;
 			break;
 		case 'f':
-			forward = TRUE;
+			forward = true;
 			break;
 		case 'g':
-			nogecos = TRUE;
+			nogecos = true;
 			break;
 		case 'h':
-			showhost = TRUE;
+			showhost = true;
 			break;
 		case 'i':
-			doident = TRUE;
+			doident = true;
 			break;
 		case 'I':
-			forceident = TRUE;
+			forceident = true;
 			break;
 		case 'l':
-			logging = TRUE;
+			logging = true;
 			break;
 		case 'm':
-			nomatch = TRUE;
+			nomatch = true;
 			break;
 		case 'p':
-			noplan = TRUE;
+			noplan = true;
 			break;
 		case 'P':
-			prog = optarg;
+			prog_finger = optarg;
 			break;
 		case 'r':
-			forceresolv = TRUE;
+			forceresolv = true;
 			break;
 		case 's':
-			defaultshort = TRUE;
+			defaultshort = true;
 			break;
 		case 'S':
-			forceshort = TRUE;
+			forceshort = true;
 			break;
 		case 'u':
-			nolist = TRUE;
+			nolist = true;
 			break;
 		case 'V':
 			puts(version);
 			exit(0);
 		case '?':
+			usage();
+			/* NOTREACHED */
 		default:
-			err("illegal option -- %c", ch);
+			syslog(LOG_ERR, "illegal option -- %c", ch);
+			usage();
+			/* NOTREACHED */
 		}
 	}
+	if (optind != argc) {
+		usage();
+		/* NOTREACHED */
+	}
 	sval = sizeof(sin);
-	if (getpeername(0, (struct sockaddr *) &sin, &sval) < 0)
-		err("getpeername: %s", strerror(errno));
-	if (getsockname(0, (struct sockaddr *) &laddr, &sval) < 0)
-		err("getsockname: %s", strerror(errno));
+	if (getpeername(0, (struct sockaddr *) &sin, &sval) < 0) {
+		syslog(LOG_ERR, "getpeername: %m");
+		exit(1);
+		/* NOTREACHED */
+	}
+	if (getsockname(0, (struct sockaddr *) &laddr, &sval) < 0) {
+		syslog(LOG_ERR, "getsockname: %m");
+		exit(1);
+		/* NOTREACHED */
+	}
 
 	if (doident || forceident) {
 		char idreply[STRING_LENGTH + 1];
 
-		rfc931((struct sockaddr *) &sin, (struct sockaddr *) &laddr, idreply);
-		if (!(ruser = strdup(idreply)))
-			err("strdup: no memory - %s", strerror(errno));
+		rfc931((struct sockaddr *) &sin, (struct sockaddr *) &laddr, idreply); /* XXX should use ident(3) et al */
+		if (!(ruser = strdup(idreply))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	} else {
-		if (!(ruser = strdup(NO_IDENT_DONE)))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(ruser = strdup(NO_IDENT_DONE))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
-	if (!fgets(line, sizeof(line), stdin)) {
+	if (!fgets(line, sizeof(line), stdin)) { /* do not use getline(3)! */
 		exit(1);
 		/* NOTREACHED */
 	}
@@ -210,8 +204,11 @@ main(argc, argv)
 		 * The following is here to try and prevent people
 		 * from putting in fake IN-ADDR records.
 		 */
-		if (!(rhost = strdup(hp->h_name)))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(rhost = strdup(hp->h_name))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 		if (!(hp = gethostbyname(rhost))) {
 			if (forceresolv) {
 				syslog(LOG_NOTICE,
@@ -222,15 +219,18 @@ main(argc, argv)
 				exit(1);
 				/* NOTREACHED */
 			}
-			if (!(rhost = strdup(inet_ntoa(sin.sin_addr))))
-				err("strdup: no memory - %s", strerror(errno));
+			if (!(rhost = strdup(inet_ntoa(sin.sin_addr)))) {
+				syslog(LOG_ERR, "strdup: %m");
+				exit(1);
+				/* NOTREACHED */
+			}
 		} else {
 			struct	in_addr *i;
-			int match = FALSE;
+			int match = false;
 
 			while ((i = (struct in_addr *) *hp->h_addr_list++)) {
 				if (i->s_addr == sin.sin_addr.s_addr) {
-					match = TRUE;
+					match = true;
 					break;
 				}
 			}
@@ -245,8 +245,11 @@ main(argc, argv)
 			}
 		}
 	} else {
-		if (!(rhost = strdup(inet_ntoa(sin.sin_addr))))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(rhost = strdup(inet_ntoa(sin.sin_addr)))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 		if (forceresolv) {
 			syslog(LOG_NOTICE, "from=%s@[%s] to=[unknown] stat=Cannot resolve hostname",
 			       ruser, rhost);
@@ -256,6 +259,7 @@ main(argc, argv)
 			/* NOTREACHED */
 		}
 	}
+	/* N.B.:  Note we expect your inetd(8) to have already called hosts_access(3)!!! */
 	perm = access_check(ruser, rhost);
 	if (perm & ACCESS_DENIED) {
 		if (logging) {
@@ -274,25 +278,25 @@ main(argc, argv)
 	 * access file.
 	 */
 	if (perm & ACCESS_NOLIST)
-		nolist = TRUE;
+		nolist = true;
 	if (perm & ACCESS_NOPLAN)
-		noplan = TRUE;
+		noplan = true;
 	if (perm & ACCESS_FORWARD)
-		forward = TRUE;
+		forward = true;
 	if (perm & ACCESS_NOGECOS)
-		nogecos = TRUE;
+		nogecos = true;
 	if (perm & ACCESS_NOHOME)
-		nohome = TRUE;
+		nohome = true;
 	if (perm & ACCESS_NOMATCH)
-		nomatch = TRUE;
+		nomatch = true;
 	if (perm & ACCESS_FORCEIDENT)
-		forceident = TRUE;
+		forceident = true;
 	if (perm & ACCESS_SHOWHOST)
-		showhost = TRUE;
+		showhost = true;
 	if (perm & ACCESS_FORCESHORT)
-		forceshort = TRUE;
+		forceshort = true;
 	if (perm & ACCESS_DEFAULTSHORT)
-		defaultshort = TRUE;
+		defaultshort = true;
 	if (forceident && (strcmp(ruser, STRING_UNKNOWN) == 0 ||
 			   strcmp(ruser, NO_IDENT_DONE) == 0)) {
 		if (logging) {
@@ -319,37 +323,68 @@ main(argc, argv)
 	ap = strtok(lp, " ");		/* split on possible space separator */
 	if (forceshort) {
 		/* ignore any '/W' request for verbose output */
-		if (!(av[ac++] = strdup("-s")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-s"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	} else if (ap && ap[0] == '/' && toupper(ap[1]) == 'W') {
-		if (!(av[ac++] = strdup("-l")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-l"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 		ap = strtok((char *) NULL, " "); /* look for more tokens */
 	} else {
 		if (defaultshort) {
-			if (!(av[ac++] = strdup("-s")))
-				err("strdup: no memory - %s", strerror(errno));
+			if (!(av[ac++] = strdup("-s"))) {
+				syslog(LOG_ERR, "strdup: %m");
+				exit(1);
+				/* NOTREACHED */
+			}
+		}
+	}
+	if (eightbit) {
+		if (!(av[ac++] = strdup("-8"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
 		}
 	}
 	if (nomatch) {
-		if (!(av[ac++] = strdup("-m")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-m"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
 	if (nogecos) {
-		if (!(av[ac++] = strdup("-g")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-g"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
 	if (nohome) {
-		if (!(av[ac++] = strdup("-b")))	/* not in all finger(1)s */
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-b"))) { /* not in all finger(1)s */
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
 	if (noplan) {
-		if (!(av[ac++] = strdup("-p")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-p"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
 	if (showhost) {
-		if (!(av[ac++] = strdup("-h")))
-			err("strdup: no memory - %s", strerror(errno));
+		if (!(av[ac++] = strdup("-h"))) {
+			syslog(LOG_ERR, "strdup: %m");
+			exit(1);
+			/* NOTREACHED */
+		}
 	}
 	if (!forward && (ap && strchr(ap, '@'))) {
 		if (logging) {
@@ -375,22 +410,33 @@ main(argc, argv)
 		syslog(LOG_NOTICE, "from=%s@%s to=%s stat=OK",
 		       ruser, rhost, (ap ? ap : "[user list]"));
 	}
-	if (execute_user_cmd(ap, ruser, rhost)) {
+	if (run_user_cmd(ap, ruser, rhost)) {
 		exit(0);
 		/* NOTREACHED */
 	} else {
 		if (ap) {
-			if (!(av[ac++] = strdup(ap)))
-				err("strdup: no memory - %s", strerror(errno));
+			if (!(av[ac++] = strdup(ap))) {
+				syslog(LOG_ERR, "strdup: %m");
+				exit(1);
+				/* NOTREACHED */
+			}
 		}
 	}
 	av[ac] = NULL;			/* no more arguments!  ;-) */
-	lp = (lp = strrchr(prog, '/')) ? (lp + 1) : prog;
-	if (!(av[0] = strdup(lp)))
-		err("strdup: no memory - %s", strerror(errno));
-	if (!execute(prog, av))
-		err("execute: %s", strerror(errno));
+	lp = (lp = strrchr(prog_finger, '/')) ? (lp + 1) : prog_finger;
+	if (!(av[0] = strdup(lp))) {
+		syslog(LOG_ERR, "strdup: %m");
+		exit(1);
+		/* NOTREACHED */
+	}
+	run_program(prog_finger, av);
+	/* NOTREACHED */
+}
 
-	exit(0);
+static void
+usage()
+{
+	syslog(LOG_WARNING, "Usage:  fingerd [-c -confdir] [-P -finger] [-bfglmpru] [-h | -H] [-i | -I] [-s | -S]");
+	exit(2);
 	/* NOTREACHED */
 }

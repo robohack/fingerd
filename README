@@ -1,79 +1,69 @@
 FINGERD -- A safer and more configurable version of this infamous daemon
 
-This is a much updated version of a package put together by Mike Shanzer.
+This is a much updated version of Mike Shanzer's fingerd-1.3.
 
-This package a new more functional version of the traditional fingerd.
+This is a re-written, more secure, and more functional version of the
+traditional fingerd.
 
-What does this fingerd have to offer?
+So, just what does this fingerd have to offer?
 
 	- it has much enhanced logging.
 
 	- it supports access control lists (ACLs):  you can restrict
 	  finger requests to certain hosts (and certain users within
-	  trusted networks if you trust identd, aka RFC-1413 nee RFC
-	  931).
+	  trusted networks if you trust your identd, aka RFC-1413 nee
+	  RFC-931).
 
 	- does not forward requests by default (in accordance with the
-          recommendations of RFC 1288)
+	  recommendations of RFC 1288)
 
 	- has other command-line and ACL control options to optionally
-          implement further recommendations of RFC 1288, such as one to
-          completely disable user name matching, one to prevent sending
-          of user lists (i.e. listing all currently logged in users),
-          another to turn off sending of ~/.plan files, and finally one
-          to prevent sending of GECOS (office and telephone number
-          sub-fields) and/or home directory.
+	  implement further recommendations of RFC 1288, such as one to
+	  completely disable user name matching, one to prevent sending
+	  of user lists (i.e. listing all currently logged in users),
+	  another to turn off sending of ~/.plan files, and finally one
+	  to prevent sending of GECOS (office and telephone number
+	  sub-fields) and/or home directory.
 
 	- it sports a "message of the day" file for sending host-wide
-          announcements, disclaimers, etc.
+	  announcements, disclaimers, etc.
 
 	- it can execute programs when finger requests for specified
 	  users are received and will return the output of such programs
 	  to the remote user.
 
-	- except for the last mentioned feature, it should be secure.
+	- except for the last mentioned feature it should be secure.  It
+	  normally should be run as an unprivileged user and it does not
+	  need to own any files, etc.; needing only access to its own
+	  (optional) configuration files.
 
 	- even with all of this it should be much simpler to configure
-          and use than most any of the other so-called "enhanced"
-          versions of fingerd -- it's certainly smaller and simpler,
-          code-wise, than some of them!
+	  and use than most any of the other so-called "enhanced"
+	  versions of fingerd -- it's certainly smaller and simpler,
+	  code-wise, than some of them!
 
 
 TO BUILD FINGERD
 
-Please see the file "INSTALL" for overall instructions on how to
-configure and build this package.
+In general you need only run the following to build and install:
 
-In general you need only run "./configure && make && make install"
+	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake
+	MAKEOBJDIRPREFIX=$(pwd)/build bsdmake DESTDIR=/usr/local install
 
-To install fingerd in a local directory but at the same time replace the
-system binary, you should be able to run "make install-symlinks" after
-having built and installed it as above.  This wil safely move aside the
-vendor binary and install a symlink to your brand new custom fingerd.
+(This assumes you are using a BSD "make", which you must.  Just do it!)
 
 
 FOR MORE INFORMATION
 
-If you have any troubles, questions, or feature requests, please send
-mail to <bugs@robohack.planix.com>.  The lastest version of this
-software is available at:
+If you have any troubles, questions, or feature requests, for fingerd
+you can send mail to <bugs@robohack.planix.com>, or open an issue on
+GitHub.
 
-	 <URL:ftp://ftp.weird.com/pub/local/fingerd.tar.gz>
+The lastest version of this software is available at:
 
-or alternately at:
-
-	 <URL:ftp://ftp.planix.com/pub/Planix/fingerd.tar.gz>
-
-The original version of fingerd upon which this version is based is
-still available from <URL:ftp://ftp.foobar.com/pub/fingerd-1.3.tar.gz>.
-As Mike says in <URL:http://www.foobar.com/home/shanzer/fingerd.html> "I
-have not touched this code in like 4 years [[note he means since 1995,
-so now almost 5 years as of this release of this version]].  It should
-still all work, but it is not currently in active development."
+	<URL:https://github.com/robohack/fingerd>
+	<URL:ftp://ftp.planix.com/pub/Planix/fingerd.tar.gz>
 
 -- 
 						Greg A. Woods
-						<woods-fingerd@planix.com>
-
-
-#ident	"@(#)fingerd:$Name:  $:$Id: README,v 1.6 2000/12/02 17:32:08 woods Exp $"
+						<woods-fingerd@planix.ca>

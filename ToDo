@@ -6,4 +6,4 @@
 
 - possibly add a REJECT or similar pseudo-command for fingerd.users
 
-#ident "@(#)fingerd:$Name:  $:$Id: ToDo,v 1.1 2000/12/02 04:31:14 woods Exp $"
+- possibly free all allocated memory more carefully

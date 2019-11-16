@@ -29,59 +29,45 @@
  *  		woods@planix.com
  */
 
-#ident	"@(#)fingerd:$Name:  $:$Id: fingerd.h,v 1.11 2000/12/02 03:53:53 woods Exp $"
-
 #ifndef FINGERD_SYSLOG_FACILITY
 # define FINGERD_SYSLOG_FACILITY LOG_DAEMON /* default syslog facility */
 #endif
-#ifndef	IDENT_TIMEOUT
-# define IDENT_TIMEOUT		30	/* ident timeout */
-#endif
 
-#ifndef FALSE
-# define FALSE	0
-#endif
-
-#ifndef TRUE
-# define TRUE	1
-#endif
-
-#define ACCESS_GRANTED		0x0000	/* acl file missing */
-#define ACCESS_DENIED		0x0001
-#define	ACCESS_FORWARD		0x0002
-#define	ACCESS_NOLIST		0x0004
-#define	ACCESS_NOGECOS		0x0008
-#define	ACCESS_NOHOME		0x0010
-#define	ACCESS_NOMATCH		0x0020
-#define	ACCESS_NOPLAN		0x0040
-#define	ACCESS_FORCEIDENT	0x0080
-#define	ACCESS_FORCESHORT	0x0100
-#define	ACCESS_DEFAULTSHORT	0x0200
-#define	ACCESS_SHOWHOST		0x0400
+typedef enum access_e {
+	ACCESS_GRANTED =	0,	/* acl file missing */
+	ACCESS_DENIED =		(1U <<  1),
+	ACCESS_FORWARD =	(1U <<  2),
+	ACCESS_NOLIST =		(1U <<  3),
+	ACCESS_NOGECOS =	(1U <<  4),
+	ACCESS_NOHOME =		(1U <<  5),
+	ACCESS_NOMATCH =	(1U <<  6),
+	ACCESS_NOPLAN =		(1U <<  7),
+	ACCESS_FORCEIDENT =	(1U <<  8),
+	ACCESS_FORCESHORT =	(1U <<  9),
+	ACCESS_DEFAULTSHORT =	(1U << 10),
+	ACCESS_SHOWHOST =	(1U << 11),
+} access_e;
 
 extern char    *confdir;
 extern char     version[];
 
-#define NO_IDENT_DONE		"[no-ident]"
-#define NO_USER_SPECIFIED	"[userlist]"
-
 /*
- * these files are found in confdir, by default PATH_SYSCONFDIR.
+ * these files are found in confdir, by default _PATH_SYSCONFDIR.
  * See misc.c:conf_file_path() for more info.
  */
 #define FINGERD_ACCESS_FILE	"fingerd.acl"
 #define FINGERD_MOTD_FILE	"fingerd.motd"
 #define FINGERD_USERS_FILE	"fingerd.users"
 
+#define NO_IDENT_DONE		"[no-ident]"
+#define NO_USER_SPECIFIED	"[userlist]"
+
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-#ifndef HAVE_ERR
-void            err __P((const char *, ...));
-#endif
-unsigned long   access_check __P((char *name, char *host));
-int             execute __P((char *program, char **args));
-int             execute_user_cmd __P((char *user, char *ruser, char *rhost));
-char           *conf_file_path __P((char *)); 
+access_e        access_check __P((char *name, char *host));
+void            run_program __P((char *program, char **args));
+int             run_user_cmd __P((char *user, char *ruser, char *rhost));
+char           *conf_file_path __P((char *));
 char           *get_ident __P((int fd, int timeout));
 __END_DECLS

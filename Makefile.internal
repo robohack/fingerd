@@ -1,0 +1,87 @@
+# -*- makefile-bsdmake -*-
+#
+#	Makefile.internal - input for pmake
+#
+# Copyright (C) 2019 Greg A. Woods - This work is licensed under the Creative
+# Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
+# the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
+# send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
+#
+
+# adjust these as necessary
+PATH_SYSCONFDIR ?=	/etc
+PATH_FINGER ?=		/usr/bin/finger
+
+BINDIR ?=		/usr/libexec
+
+# We only support POSIX IEEE Std 1003.1-2001, IEEE Std 1003.2-1992, and C99
+#
+# And we require a 4.4BSD compatible syslog(3) [with openlog(3)]; as well as
+# libident [XXX currently using the old compatibility function rfc931() from
+# libwrap, but eventually will use ident_lookup(3)?]
+
+# You shouldn't have to change anything below here.
+
+PACKAGE_NAME =		fingerd
+PACKAGE_VERSION =	1.4.0.99-Preview
+
+_PACKAGE_NAME =		"${PACKAGE_NAME}"
+CPPFLAGS += -DPACKAGE_NAME=${_PACKAGE_NAME:Q}
+_PACKAGE_VERSION =	"${PACKAGE_VERSION}"
+CPPFLAGS += -DPACKAGE_VERSION=${_PACKAGE_VERSION:Q}
+
+_PATH_FINGER =		"${PATH_FINGER}"
+CPPFLAGS += -D_PATH_FINGER=${_PATH_FINGER:Q}
+_PATH_SYSCONFDIR =	"${PATH_SYSCONFDIR}"
+CPPFLAGS += -D_PATH_SYSCONFDIR=${_PATH_SYSCONFDIR:Q}
+
+# XXX change to use ident_lookup(), and do some dance to find libident?
+#
+LDADD += -lwrap
+DPADD += $(LIBWRAP}
+
+PROG =	fingerd
+
+SRCS =	fingerd.c access.c misc.c version.c
+
+MAN =	fingerd.8
+
+DOCS =		AUTHORS COPYING NEWS README THANKS ToDo
+
+# XXX these should also be put in ${PREFIX}/share/examples/${PACKAGE_NAME} for packages
+#
+FFILES=	${.CURDIR}/samples/fingerd.acl \
+	${.CURDIR}/samples/fingerd.motd \
+	${.CURDIR}/samples/fingerd.users
+
+version.o: Makefile
+
+fingerd.o: Makefile
+
+# note the care taken to not change the target unless it is really different
+# might cause the command to always run (e.g. if Makefile is newer than
+# fingerd.8).  If this bothers you then run "make -t fingerd.8" to force the
+# target file to be up to date.
+#
+fingerd.8: fingerd.8.in Makefile
+	sed -e 's|@PATH_FINGER@|${PATH_FINGER}|' \
+	    -e 's|@PATH_SYSCONFDIR@|${PATH_SYSCONFDIR}|' \
+	    -e 's|@PACKAGE_NAME@|${PACKAGE_NAME}|' \
+	    -e 's|@PACKAGE_VERSION@|${PACKAGE_VERSION}|' \
+	< ${.CURDIR}/fingerd.8.in > ${.TARGET}.tmp && \
+	cmp -s ${.TARGET}.tmp ${.TARGET} || mv ${.TARGET}.tmp ${.TARGET}
+
+CLEANFILES += fingerd.8
+
+distribution:
+	cd ${.CURDIR}/samples; \
+		${INSTALL} -c -o root -g wheel -m 644 ${FFILES} ${DESTDIR}/etc
+
+.include <bsd.prog.mk>
+
+#
+# Local Variables:
+# eval: (make-local-variable 'compile-command)
+# compile-command: (concat "mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build " (default-value 'compile-command))
+# End:
+#
