@@ -35,6 +35,15 @@ CPPFLAGS += -D_PATH_FINGER=${_PATH_FINGER:Q}
 _PATH_SYSCONFDIR =	"${PATH_SYSCONFDIR}"
 CPPFLAGS += -D_PATH_SYSCONFDIR=${_PATH_SYSCONFDIR:Q}
 
+# Note:  If your platform does have libwrap (and tcpd.h), but they're not in in
+# a system directory searched by default then you can pass appropriate -I and -L
+# flags by setting CPPFLAGS and LDFLAGS in the environment.
+#
+# N.B.:  You CANNOT set make variables on the command line if they must be
+# adjusted within a Makefile -- they can only be set in the environment!
+# Variables set on the command line are effectively always set last, after all
+# Makefiles have been read and processed.
+#
 # XXX change to use ident_lookup(), and do some dance to find libident?
 #
 CPPFLAGS += -DHAVE_LIBWRAP
