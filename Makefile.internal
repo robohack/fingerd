@@ -37,6 +37,7 @@ CPPFLAGS += -D_PATH_SYSCONFDIR=${_PATH_SYSCONFDIR:Q}
 
 # XXX change to use ident_lookup(), and do some dance to find libident?
 #
+CPPFLAGS += -DHAVE_LIBWRAP
 LDADD += -lwrap
 DPADD += $(LIBWRAP}
 

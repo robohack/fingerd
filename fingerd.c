@@ -43,7 +43,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <tcpd.h>
+#ifdef HAVE_LIBWRAP
+# include <tcpd.h>			/* libwrap, for rfc931() */
+#endif
 
 #include "fingerd.h"
 
@@ -120,8 +122,14 @@ main(argc, argv)
 			break;
 		case 'i':
 			doident = true;
+#ifndef HAVE_LIBWRAP
+			syslog(LOG_WARN, "libwrap not supported -- ident impossible!");
+#endif
 			break;
 		case 'I':
+#ifndef HAVE_LIBWRAP
+			syslog(LOG_ERR, "libwrap not supported -- ident impossible!");
+#endif
 			forceident = true;
 			break;
 		case 'l':
@@ -176,23 +184,31 @@ main(argc, argv)
 		/* NOTREACHED */
 	}
 
+#ifdef HAVE_LIBWRAP
 	if (doident || forceident) {
 		char idreply[STRING_LENGTH + 1];
 
 		rfc931((struct sockaddr *) &sin, (struct sockaddr *) &laddr, idreply); /* XXX should use ident(3) et al */
-		if (!(ruser = strdup(idreply))) {
+		if ((ruser = strdup(idreply)) == NULL) {
 			syslog(LOG_ERR, "strdup: %m");
 			exit(1);
 			/* NOTREACHED */
 		}
-	} else {
-		if (!(ruser = strdup(NO_IDENT_DONE))) {
+	} else
+#endif
+	{
+		if ((ruser = strdup(NO_IDENT_DONE)) == NULL) {
 			syslog(LOG_ERR, "strdup: %m");
 			exit(1);
 			/* NOTREACHED */
 		}
 	}
-	if (!fgets(line, sizeof(line), stdin)) { /* do not use getline(3)! */
+	if (fgets(line, sizeof(line), stdin) == NULL) { /* do not use getline(3)! */
+#ifdef DEBUG
+		/* can be too noisy for regular use? */
+		/* usually just indicates EOF? */
+		syslog(LOG_ERR, "fgets: %m");
+#endif
 		exit(1);
 		/* NOTREACHED */
 	}
@@ -436,7 +452,11 @@ main(argc, argv)
 static void
 usage()
 {
+#ifdef HAVE_LIBWRAP
 	syslog(LOG_WARNING, "Usage:  fingerd [-c -confdir] [-P -finger] [-bfglmpru] [-h | -H] [-i | -I] [-s | -S]");
+#else
+	syslog(LOG_WARNING, "Usage:  fingerd [-c -confdir] [-P -finger] [-bfglmpru] [-h | -H] [-s | -S]");
+#endif
 	exit(2);
 	/* NOTREACHED */
 }
