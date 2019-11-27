@@ -2,7 +2,7 @@
 #
 #	Common/shared setup for BSD Makefiles
 #
-#	This should be included at the top of your Makefile
+#	This should be included at the top of all your Makefiles
 #
 # Copyright (C) 2019 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
@@ -10,7 +10,7 @@
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
 #
 
-# WARNING!!!  NO TARGETS before "all"!!!  Do not put any other targets in here!
+# WARNING!!!  Do not put any targets in here!
 
 # N.B.:  Nothing in here should be changed just to build this project.
 #
@@ -102,17 +102,11 @@ MANTARGET +=	html
 bmake_topdir ?= # emptyy
 bmake_srcdir =	${.CURDIR}/${bmake_topdir}
 
-# This .if is annoying, but some older systems don't support CPPFLAGS.
-#
-.if defined(CPPFLAGS)
 CPPFLAGS +=	-I${bmake_srcdir}
-.else
-CFLAGS +=	-I${bmake_srcdir}
-.endif
 
 MKOBJ = yes
 # XXX ideally this would be "auto", but that is not yet very widely supported.
-# See below.
+# See Makefile.end.
 MKOBJDIRS = yes
 
 # yes, always -- we use this because it's safer when using a shared network
@@ -121,20 +115,20 @@ MKOBJDIRS = yes
 #
 OBJMACHINE ?=	yes
 
+# Yes, "make obj" is forced -- it is stupid to build in the source directory)
+# (forcing "make depend" is also good, though a bit of a waste for pkgsrc.
+#
+# Note with some versions of "bmake" this will cause obj* directories to be
+# created in the existing obj* directories the second time around...
+#
 BUILDTARGETS =	bmake-do-obj
 BUILDTARGETS +=	.WAIT
 BUILDTARGETS +=	bmake-do-depend
 BUILDTARGETS +=	.WAIT
 
-# this must be the first target
-#
-all: .PHONY .MAKE bmake-test-obj .WAIT bmake-test-obj-again .WAIT ${BUILDTARGETS}
-
-.ORDER: bmake-test-obj bmake-test-obj-again bmake-do-obj bmake-do-depend ${SUBDIR} all
-
 #
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "mkdir -p obj; " (default-value 'compile-command))
+# compile-command: (concat "mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build " (default-value 'compile-command))
 # End:
 #

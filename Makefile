@@ -16,15 +16,30 @@
 #
 #	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake
 #
+# (You will probably have to run this twice.)
+#
 # INSTALL
 #
 #	MAKEOBJDIRPREFIX=$(pwd)/build bsdmake DESTDIR=/usr/local install
 #
+# MAKEOBJDIRPREFIX may also be anywhere outside the source tree, but with some
+# mk files, e.g. on NetBSD, it must exist beforehand.
+#
+# Except on FreeBSD you can also just run "make", twice, and local a object
+# directory will be made and used.
 
-# Wrap the basic BSD Makefile with header and footer files for stand-alone
-# builds (on non-BSD systems), and for and development work.
+# Wrap the basic BSD Makefile.internal with header and footer files for
+# stand-alone builds (on non-BSD systems), and for and development work.
 #
 .include "${.CURDIR}/Makefile.inc"
+#
+# This must be the first target seen by make.
+#
+# Depending on "bmake-test-obj-again" is a workaround for versions of make which
+# do not fully support MKOBJDIRS=auto.
+#
+all: .PHONY .MAKE bmake-test-obj-again .WAIT ${BUILDTARGETS}
+
 .include "${.CURDIR}/Makefile.internal"
 .include "${.CURDIR}/Makefile.end"
 

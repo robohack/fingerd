@@ -9,27 +9,23 @@
 #
 
 # The rest is just default boilerplate for stand-alone builds....
-#
-# Yes, "make obj" is forced -- it is stupid to build in the source directory)
-# (forcing "make depend" is also good, though a bit of a waste for pkgsrc.
-#
-# Note with "bmake" this will cause obj* directories to be created in the
-# existing obj* directories the second time around...
-#
 
 # XXX this is a very crude hack -- but the only real fix is probably to wait for
-# everyone to pick up support for MKOBJDIRS=auto...
+# everyone to pick up <auto.obj.mk> so this can just use MKOBJDIRS=auto...
 #
-bmake-test-obj: .PHONY
-	@if [ $$(pwd) = ${.CURDIR:Q} -a ! -z ${MAKEOBJDIRPREFIX:Q} -a ! -d ${MAKEOBJDIRPREFIX:Q} ]; then echo "You must create ${MAKEOBJDIRPREFIX}!"; false; fi
+bmake-test-obj: .PHONY bmake-do-obj
+	@if [ $$(pwd) = ${.CURDIR:Q} -a ! -z "${MAKEOBJDIRPREFIX}" -a ! -d "${MAKEOBJDIRPREFIX}" ]; then echo "You must create ${MAKEOBJDIRPREFIX} first!"; false; fi
 
 # XXX because simple projects use <bsd.prog.mk> at a top level, we must have the
 # ${.OBJDIR} present __BEFORE__ make is run since make will try to chdir(2) to
 # ${.OBJDIR} before doing anything else, but if that doesn't exist then it will
-# simply stay in ${.CURDIR} to run commands...
+# simply stay in ${.CURDIR} to run commands....  However we can have this depend
+# on bmake-test-obj and thus that's dependency on bmake-do-obj will cause "obj"
+# to be made and the user can just run "MAKEOBJDIRPREFIX=build make" again and
+# everything will finally procede in the right ${.OBJDIR}.
 #
-bmake-test-obj-again: .PHONY bmake-do-obj
-	@if [ $$(pwd) = ${.CURDIR:Q} ]; then echo "${MAKEOBJDIRPREFIX}${.OBJDIR} not yet present, try again"; false; fi
+bmake-test-obj-again: .PHONY bmake-test-obj
+	@if [ $$(pwd) = ${.CURDIR:Q} ]; then echo "Not yet working in ${MAKEOBJDIRPREFIX:U'objdir'}, try again!"; false; fi
 
 .for targ in ${BUILDTARGETS:S/.WAIT//g}
 ${targ}: .PHONY ${targ:S/bmake-do-//}
@@ -71,8 +67,6 @@ install-docs: .PHONY beforeinstall .WAIT docs
 .endfor
 	-cp -R $(MAKEOBJDIRPREFIX:Q)/man ${DESTDIR}${SHAREDIR}/
 
-.include "${.CURDIR}/Makefile.compiler"
-
 #SRCINSTDIR ?=	${BSDSRCDIR}/${BINDIR:S/\//./g}
 SRCINSTDIR ?=	${BSDSRCDIR}/libexec
 #SRCUPDATEDIR?=	${SRCINSTDIR}/${.CURDIR:C/.*\///}
@@ -89,9 +83,13 @@ ${PACKAGE_NAME}-to-netbsd: .PHONY ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
 	chmod ${FILESMODE} ${SRCUPDATEDIR}/${_file_}
 .endfor
 
+# finally include the compiler settings helpers
+#
+.include "${.CURDIR}/Makefile.compiler"
+
 #
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "mkdir -p obj; " (default-value 'compile-command))
+# compile-command: (concat "mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build " (default-value 'compile-command))
 # End:
 #
