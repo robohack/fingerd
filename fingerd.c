@@ -44,7 +44,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #ifdef HAVE_LIBWRAP
-# include <tcpd.h>			/* libwrap, for rfc931() */
+# include <tcpd.h>			/* libwrap, for rfc931() & STRING_UNKNOWN */
 #endif
 
 #include "fingerd.h"
@@ -55,6 +55,20 @@ char           *confdir = _PATH_SYSCONFDIR;
 extern char    *optarg;
 extern int      optind;
 extern int      opterr;
+
+#ifdef HAVE_LIBWRAP
+/*
+ * We have to supply these variables for the library in case the program is
+ * linked dynamically as libwrap.so will require these symbols be available even
+ * if this program doesn't make use of any function in libwrap which needs those
+ * symbols.
+ *
+ * xxx this is kind of stupid, but a "normal" side-effect of dynamic linking to
+ * a library which requires the caller to define some global symbol(s).
+ */
+int allow_severity;
+int deny_severity;
+#endif
 
 static void usage __P((void));
 
