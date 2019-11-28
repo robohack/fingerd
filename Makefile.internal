@@ -23,7 +23,7 @@ BINDIR ?=		/usr/libexec
 # You shouldn't have to change anything below here.
 
 PACKAGE_NAME =		fingerd
-PACKAGE_VERSION =	1.4.0.99-Preview
+PACKAGE_VERSION =	2.0
 
 _PACKAGE_NAME =		"${PACKAGE_NAME}"
 CPPFLAGS += -DPACKAGE_NAME=${_PACKAGE_NAME:Q}

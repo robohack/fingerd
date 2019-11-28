@@ -45,6 +45,10 @@ So, just what does this fingerd have to offer?
 
 TO BUILD FINGERD
 
+This release of fingerd was primarily done as an example of packaging a
+portable program with a BSD Make Makefile and additional helper Makefile
+fragments for stand-alone builds.
+
 In general you need only run the following to build and install:
 
 	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake
@@ -63,6 +67,7 @@ The lastest version of this software is available at:
 
 	<URL:https://github.com/robohack/fingerd>
 	<URL:ftp://ftp.planix.com/pub/Planix/fingerd.tar.gz>
+	<URL:http://www.planix.com/ftp/pub/Planix/fingerd.tar.gz>
 
 -- 
 						Greg A. Woods

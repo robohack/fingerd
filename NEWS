@@ -1,10 +1,14 @@
 Fingerd NEWS -- history of user-visible changes.
-Copyright (C) 1997, 1999 Planix, Inc.
+Copyright (C) 1997, 1999, 2019 Greg A. Woods <woods@planix.com>
 
-Please send fingerd bug reports to <bugs@robohack.planix.com>
+Please send fingerd bug reports to <bugs@robohack.planix.com> or open an
+issue on GitHub.
 
-* User-visible changes new in $Name:  $.
+* User-visible changes new in Fingerd Release 2.0.
 
+- cleaned up the old porting mess that used GNU Autotools.
+- just use BSD Make and system CPP definitions!
+- assume libwrap (and its <tcpd.h>) are locally available.
 
 * User-visible changes new in Fingerd Release 1.4.
 
@@ -54,7 +58,3 @@ New in this version 1.3:
 	- added nomatch to the config file so certain hosts can do fuzzy
 	  user name matching (kelly@nine.org)
 	- using latest rfc931 code (wietse@wzv.win.tue.nl)
-
-
-New in this version 2.0:
-	- cleaned up old porting mess.
