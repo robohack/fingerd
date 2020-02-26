@@ -22,6 +22,11 @@
 #
 #	MAKEOBJDIRPREFIX=$(pwd)/build bsdmake DESTDIR=/usr/local install
 #
+# (This is not the normal use of DESTDIR in BSD Make, but it is the best way for
+# out-of-tree builds, and it does not get in the way of pkgsrc either.)
+#
+# N.B.:  Do not specify DESTDIR for the build phase!
+#
 # MAKEOBJDIRPREFIX may also be anywhere outside the source tree, but with some
 # mk files, e.g. on NetBSD, it must exist beforehand.
 #
