@@ -83,6 +83,12 @@ ${PACKAGE_NAME}-to-netbsd: .PHONY ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
 	chmod ${FILESMODE} ${SRCUPDATEDIR}/${_file_}
 .endfor
 
+TMPDIR ?=	${HOME}/tmp
+TARBASE ?=	${PACKAGE_NAME}-${PACKAGE_VERSION}
+${TARBASE}: .PHONY
+	pax -wvz -s '|^|$@/|' -f ${TMPDIR}/$@.tar.gz *
+tar: .PHONY ${TARBASE}
+
 # finally include the compiler settings helpers
 #
 .include "${.CURDIR}/Makefile.compiler"
