@@ -1,5 +1,13 @@
 FINGERD -- A safer and more configurable version of this infamous daemon
 
+FINGER was first invented by Les Earnest at SAIL.
+
+	https://web.stanford.edu/~learnest/les/
+
+"1972 Social networking and blogging service (FINGER) was initially just
+for SAIL but became a network service in 1975, "
+
+
 This is a much updated version of Mike Shanzer's fingerd-1.3.
 
 This is a re-written, more secure, and more functional version of the
