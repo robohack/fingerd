@@ -1,8 +1,9 @@
 # -*- makefile-bsdmake -*-
 #
-#	This should be included at the top of your Makefile
+#	Makefile.end - This should be included at the end of your Makefile
+#	(after Makefile.internal)
 #
-# Copyright (C) 2019 Greg A. Woods - This work is licensed under the Creative
+# Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA

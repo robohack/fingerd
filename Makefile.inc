@@ -1,10 +1,10 @@
 # -*- makefile-bsdmake -*-
 #
-#	Common/shared setup for BSD Makefiles
+#	Makefile.inc - Common/shared setup for BSD Makefiles
 #
 #	This should be included at the top of all your Makefiles
 #
-# Copyright (C) 2019 Greg A. Woods - This work is licensed under the Creative
+# Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
