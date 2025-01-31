@@ -64,6 +64,10 @@ extern char     version[];
 
 #include <sys/cdefs.h>
 
+#ifndef __dead
+# define __dead
+#endif
+
 __BEGIN_DECLS
 access_e        access_check __P((char *name, char *host));
 void            run_program __P((char *program, char **args));

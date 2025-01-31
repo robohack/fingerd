@@ -70,7 +70,7 @@ int allow_severity;
 int deny_severity;
 #endif
 
-static void usage __P((void));
+static void usage __P((void)) __dead;
 
 int main __P((int, char *[]));
 
