@@ -25,6 +25,9 @@ bmake-test-obj: .PHONY bmake-do-obj
 # to be made and the user can just run "MAKEOBJDIRPREFIX=build make" again and
 # everything will finally procede in the right ${.OBJDIR}.
 #
+# On FreeBSD (since 12?) if WITH_AUTO_OBJ=yes is set in the environment then the
+# need to run an extra "make obj" step can be avoided.
+#
 bmake-test-obj-again: .PHONY bmake-test-obj
 	@if [ $$(pwd) = ${.CURDIR:Q} ]; then echo "Not yet working in ${MAKEOBJDIRPREFIX:U'objdir'}, try again!"; false; fi
 
