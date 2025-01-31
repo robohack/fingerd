@@ -70,8 +70,8 @@ extern char     version[];
 
 __BEGIN_DECLS
 access_e        access_check __P((char *name, char *host));
-void            run_program __P((char *program, char **args));
+void            run_program __P((char *program, char **args)) __dead;
 int             run_user_cmd __P((char *user, char *ruser, char *rhost));
-char           *conf_file_path __P((char *));
+char           *conf_file_path __P((const char *));
 char           *get_ident __P((int fd, int timeout));
 __END_DECLS

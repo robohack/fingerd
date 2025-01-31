@@ -45,7 +45,7 @@
 
 char *
 conf_file_path(cf)
-	char	*cf;
+	const char	*cf;
 {
 	char	*pn;
 

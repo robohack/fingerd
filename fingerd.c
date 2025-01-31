@@ -49,8 +49,9 @@
 
 #include "fingerd.h"
 
-char           *argv0 = PACKAGE_NAME;
-char           *confdir = _PATH_SYSCONFDIR;
+const char     *argv0 = PACKAGE_NAME;
+char            cd[] = _PATH_SYSCONFDIR;
+char           *confdir = &cd[0];
 
 extern char    *optarg;
 extern int      optind;
@@ -110,7 +111,7 @@ main(argc, argv)
 	char           *av[BUFSIZ];
 
 	argv0 = (argv0 = strrchr(argv[0], '/')) ? argv0 + 1 : argv[0];
-	prog_finger = _PATH_FINGER;
+	prog_finger = strdup(_PATH_FINGER);
 	openlog(argv0, LOG_PID | LOG_PERROR, FINGERD_SYSLOG_FACILITY);
 	optind = 1;		/* Start options parsing */
 	opterr = 0;
