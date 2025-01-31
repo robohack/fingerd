@@ -25,6 +25,10 @@ BINDIR ?=		/usr/libexec
 PACKAGE_NAME =		fingerd
 PACKAGE_VERSION =	2.0
 
+# N.B.:  actually the code in here is still partly pre-c86!
+#
+CSTD=			c89
+
 _PACKAGE_NAME =		"${PACKAGE_NAME}"
 CPPFLAGS += -DPACKAGE_NAME=${_PACKAGE_NAME:Q}
 _PACKAGE_VERSION =	"${PACKAGE_VERSION}"
