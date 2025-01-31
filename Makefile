@@ -12,13 +12,21 @@
 # Simon Gerraty's Bmake & Mk-files from http://www.crufty.net/FreeWare/.
 # See:  http://www.crufty.net/ftp/pub/sjg/help/bmake.htm
 
+# N.B.:  The main rules for this project are in Makefile.internal
+#
+# You can easily use this and the related Makefile sections to wrap any BSD
+# Makefile and use the result to build a simple project outside of the main BSD
+# source tree, e.g. as an add-on package, perhaps on a non-BSD machine, using
+# Simon's Bmake and Mk-files.  Simply rename the original Makefile to
+# Makefile.internal, then copy this file, Makefile.inc, Makefile.compiler, and
+# Makefile.end to your project.  If your code is portable enough then no
+# "configure" step will be necessary!
+
 # BUILD:
 #
-#	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake
+#	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake obj all
 #
-# (You will probably have to run this twice.)
-#
-# INSTALL
+# INSTALL:
 #
 #	MAKEOBJDIRPREFIX=$(pwd)/build bsdmake DESTDIR=/usr/local install
 #
@@ -27,10 +35,16 @@
 #
 # N.B.:  Do not specify DESTDIR for the build phase!
 #
+# HELP:
+#
+#	bsdmake help
+#
+# Notes:
+#
 # MAKEOBJDIRPREFIX may also be anywhere outside the source tree, but with some
 # mk files, e.g. on NetBSD, it must exist beforehand.
 #
-# Except on FreeBSD you can also just run "make", twice, and local a object
+# Except on FreeBSD you can also just run "make", twice, and a local object
 # directory will be made and used.
 
 # Wrap the basic BSD Makefile.internal with header and footer files for
@@ -45,7 +59,12 @@
 #
 all: .PHONY .MAKE bmake-test-obj-again .WAIT ${BUILDTARGETS}
 
-.include "${.CURDIR}/Makefile.internal"
+# Now the main project Makefile
+#
+.include "${.CURDIR}/Makefile.internal"	# xxx should rename to Makefile.project?
+
+# This must be after <bsd.prog.mk> normally included in Makefile.internal
+#
 .include "${.CURDIR}/Makefile.end"
 
 #

@@ -9,10 +9,10 @@
 #
 
 # adjust these as necessary
-PATH_SYSCONFDIR ?=	/etc
-PATH_FINGER ?=		/usr/bin/finger
+PATH_SYSCONFDIR ?=	/etc		# location of configuration files
+PATH_FINGER ?=		/usr/bin/finger	# location of the finger(1) program
 
-BINDIR ?=		/usr/libexec
+BINDIR =		/libexec	# install location (prefixed with DESTDIR)
 
 # We only support POSIX IEEE Std 1003.1-2001, IEEE Std 1003.2-1992, and C99
 #
@@ -42,6 +42,9 @@ CPPFLAGS += -D_PATH_SYSCONFDIR=${_PATH_SYSCONFDIR:Q}
 # Note:  If your platform does have libwrap (and tcpd.h), but they're not in in
 # a system directory searched by default then you can pass appropriate -I and -L
 # flags by setting CPPFLAGS and LDFLAGS in the environment.
+#
+CPPFLAGS ?=	# Additional preprocessor flags, e.g. -I/usr/local/include
+LDFLAGS ?=	# Additional linker flags, e.g. -I/usr/local/lib
 #
 # N.B.:  You CANNOT set make variables on the command line if they must be
 # adjusted within a Makefile -- they can only be set in the environment!
@@ -87,7 +90,10 @@ fingerd.8: fingerd.8.in Makefile
 
 CLEANFILES += fingerd.8
 
-distribution:
+docs: .PHONY ${DOCS} ${MAN}
+
+distribution:	# install sample configuration files
+distribution: .PHONY
 	cd ${.CURDIR}/samples; \
 		${INSTALL} -c -o root -g wheel -m 644 ${FFILES} ${DESTDIR}/etc
 

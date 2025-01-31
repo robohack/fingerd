@@ -99,6 +99,29 @@ tar: .PHONY ${TARBASE}
 .include "${.CURDIR}/Makefile.compiler"
 
 #
+# "make help" support, inspired by Julio Merino
+#
+
+obj:	# make object directories (set MAKEOBJDIRPREFIX in env!)
+all:	# make all targets
+install:# install all targets
+
+# n.b.: those are tabs after the backslashes, and for "column -s"
+.PHONY: help
+help: # Shows interactive help.
+help: Makefile Makefile.internal Makefile.inc Makefile.end
+#	@cat README.adoc
+	@echo
+	@echo "make variables (to be set on the command line):"
+	@echo
+	@sed -Ene 's/^([^# \	]{1,})[ \	]*\?=[^#]{1,}#[ \	]*(.*)$$/\1:\	\2/p' $> | column -s '	' -t | sort
+	@echo
+	@echo "make targets:"
+	@echo
+	@sed -Ene 's/^([^#: \	]{1,}):.*#(.*)$$/\1:\	\2/p' $> | column -s '	' -t | sort
+	@echo
+
+#
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
 # compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj dependall")

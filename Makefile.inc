@@ -29,13 +29,25 @@
 # (note:  bmake puts optimizer flags in DBG)
 #
 #DBG ?= -g
+DBG ?=		# set to '-g' or '-g2', etc. for debugging
 #OPTIM ?= -O0
+OPTIM ?=	# set to '-O0', etc. for debugging
 
+LDSTATIC ?=	# set to '-static' for static linking
+
+# If you are making changes and want to be sure to clean up all warnings....
+#
+#CWARNFLAGS += -Werror
+# else
 NOGCCERROR = 1
 WARNS = 0
 
+# Installation directories
+#
 # N.B.:  ${DESTDIR} if set on the 'install' command line, it is also prepended
 # to each of these target directories.
+#
+DESTDIR ?=	# set to the installation prefix
 #
 INSTALL_OPTS =	# for specific ownerships
 # these will be over-ridden by pkgsrc
@@ -70,7 +82,10 @@ DOCGRP =	${USER_GRP}
 DOGGRP =	${USER_GRP}
 .endif
 
-STRIP =		# empty (needed for OSX bsdmake install)
+# more modern mk-files install a ${PROG}.debug file in libdata or whatever
+#
+STRIPFLAG =	# empty, for bootstrap-mk-files and older bmakes
+STRIP =		# empty, for bootstrap-mk-files and older bmakes
 
 # more hacks to avoid missing system dependencies with DESTDIR set
 DPLIBC =		# empty
@@ -82,9 +97,8 @@ LIBCRTEND =		# empty
 SHLIB_LDSTARTFILE =	# empty
 SHLIB_LDENDFILE =	# empty
 
-MKHTML =	yes
-# XXX MANTARGET does nothing?
-MANTARGET +=	html
+# note MAKECONF may override
+MKHTML ?=	yes	# set to no to avoid building HTML manual pages
 
 # Finally some common settings
 #
@@ -99,22 +113,24 @@ MANTARGET +=	html
 # since it represented the build date, not the release date, and it was removed
 # in order to make it possible to do reproducible builds.
 #
-bmake_topdir ?= # emptyy
-bmake_srcdir =	${.CURDIR}/${bmake_topdir}
-
-CPPFLAGS +=	-I${bmake_srcdir}
-
-MKOBJ = yes
-# XXX ideally this would be "auto", but that is not yet very widely supported.
-# See Makefile.end.
-MKOBJDIRS = yes
+#bmake_topdir ?= # empty
+#bmake_srcdir =	${.CURDIR}/${bmake_topdir}
+#
+#CPPFLAGS +=	-I${bmake_srcdir}
 
 # yes, always -- we use this because it's safer when using a shared network
 # directory for building/testing/etc.  (though it is sometimes somewhat
 # annoying)
 #
-OBJMACHINE ?=	yes
+MKOBJ =			yes
+OBJMACHINE ?=		yes
+OBJMACHINE_ARCH ?=	yes
+# XXX ideally this would be "auto", but that is not yet very widely supported.
+# See Makefile.end.
+MKOBJDIRS =		yes
 
+# Default build targets -- see Makefile.end
+#
 # Yes, "make obj" is forced -- it is stupid to build in the source directory)
 # (forcing "make depend" is also good, though a bit of a waste for pkgsrc.
 #
