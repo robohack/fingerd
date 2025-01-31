@@ -59,6 +59,10 @@ _bmake_install_dirs: .PHONY
 	${INSTALL} -d ${DESTDIR}${instdir}
 .endfor
 
+.if !target(docs)
+docs: .PHONY
+.endif
+
 afterinstall: .PHONY install-docs
 
 install-docs: .PHONY beforeinstall .WAIT docs
