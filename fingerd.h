@@ -68,6 +68,14 @@ extern char     version[];
 # define __dead
 #endif
 
+#ifndef __P
+# if __STDC__
+#  define __P(protos)	protos		/* full-blown ANSI C!!! */
+# else
+#  define __P(protos)	()		/* traditional C preprocessor */
+# endif
+#endif
+
 __BEGIN_DECLS
 access_e        access_check __P((char *name, char *host));
 void            run_program __P((char *program, char **args)) __dead;
