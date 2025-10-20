@@ -1,7 +1,7 @@
 # -*- makefile-bsdmake -*-
 #
 #	Makefile.end - This should be included at the end of your Makefile
-#	(after Makefile.internal)
+#	(after Makefile.main)
 #
 # Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
@@ -75,18 +75,26 @@ install-docs: .PHONY beforeinstall .WAIT docs
 .endfor
 	-cp -R $(MAKEOBJDIRPREFIX:Q)/man ${DESTDIR}${SHAREDIR}/
 
-#SRCINSTDIR ?=	${BSDSRCDIR}/${BINDIR:S/\//./g}
-SRCINSTDIR ?=	${BSDSRCDIR}/libexec
-#SRCUPDATEDIR?=	${SRCINSTDIR}/${.CURDIR:C/.*\///}
+#
+# for NetBSD integration:
+#
+
+# XXX this is just the most common transformation needed....
+SRCINSTDIR ?=	${BSDSRCDIR}/${BINDIR:S|/bin|usr.|g}
 SRCUPDATEDIR ?=	${SRCINSTDIR}/${PACKAGE_NAME}
 
 RCS_ID_EDITS =	-E -e 's/\$$Name: ([^$$]*)\$$/\1/' \
 		-e 's/\$$Id: ([^$$]*)\$$/\1/'
 
-${PACKAGE_NAME}-to-netbsd: .PHONY ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
+${PACKAGE_NAME}-to-netbsd: .PHONY ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${FILES} ${OTHER}
 	${INSTALL_DIR} ${SRCUPDATEDIR}
-.for _file_ in ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${OTHER}
+	rm -f ${SRCUPDATEDIR}/Makefile
+	sed ${RCS_ID_EDITS} < Makefile.main > ${SRCUPDATEDIR}/Makefile
+.for _file_ in ${SRCS} ${HEADERS} ${DOCS} ${MAN} ${FILES} ${OTHER}
 	rm -f ${SRCUPDATEDIR}/${_file_}
+	if [ ! -d $$(basename ${SRCUPDATEDIR}/${_file_}) ]; then \
+		mkdir -p $$(basename ${SRCUPDATEDIR}/${_file_}); \
+	fi
 	sed ${RCS_ID_EDITS} < ${_file_} > ${SRCUPDATEDIR}/${_file_}
 	chmod ${FILESMODE} ${SRCUPDATEDIR}/${_file_}
 .endfor
@@ -112,10 +120,10 @@ install:# install all targets
 # n.b.: those are tabs after the backslashes, and for "column -s"
 .PHONY: help
 help: # Shows interactive help.
-help: Makefile Makefile.internal Makefile.inc Makefile.end
+help: Makefile Makefile.main Makefile.inc Makefile.end
 #	@cat README.adoc
 	@echo
-	@echo "make variables (to be set on the command line):"
+	@echo "make variables:"
 	@echo
 	@sed -Ene 's/^([^# \	]{1,})[ \	]*\?=[^#]{1,}#[ \	]*(.*)$$/\1:\	\2/p' $> | column -s '	' -t | sort
 	@echo
@@ -127,6 +135,6 @@ help: Makefile Makefile.internal Makefile.inc Makefile.end
 #
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj dependall")
+# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj depend all")
 # End:
 #

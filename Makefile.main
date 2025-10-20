@@ -1,33 +1,27 @@
 # -*- makefile-bsdmake -*-
 #
-#	Makefile.internal - input for pmake
+#	Makefile.internal - input for BSD Make
 #
 # Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
 #
+# This file should be usable as the main Makefile in a BSD source tree.
 
 # adjust these as necessary
 PATH_SYSCONFDIR ?=	/etc		# location of configuration files
 PATH_FINGER ?=		/usr/bin/finger	# location of the finger(1) program
 
-BINDIR =		/libexec	# install location (prefixed with DESTDIR)
-
-# We only support POSIX IEEE Std 1003.1-2001, IEEE Std 1003.2-1992, and C99
-#
-# And we require a 4.4BSD compatible syslog(3) [with openlog(3)]; as well as
-# libident [XXX currently using the old compatibility function rfc931() from
-# libwrap, but eventually will use ident_lookup(3)?]
-
 # You shouldn't have to change anything below here.
 
-PACKAGE_NAME =		fingerd
-PACKAGE_VERSION =	2.0
+PACKAGE_NAME =	fingerd
 
-# N.B.:  actually the code in here is still partly pre-c86!
-#
-CSTD=			c89
+PACKAGE_MAJOR =	2
+PACKAGE_MINOR =	0
+PACKAGE_MICRO =	0
+
+PACKAGE_VERSION =	${PACKAGE_MAJOR}.${PACKAGE_MINOR}.${PACKAGE_MICRO}
 
 _PACKAGE_NAME =		"${PACKAGE_NAME}"
 CPPFLAGS += -DPACKAGE_NAME=${_PACKAGE_NAME:Q}
@@ -39,19 +33,19 @@ CPPFLAGS += -D_PATH_FINGER=${_PATH_FINGER:Q}
 _PATH_SYSCONFDIR =	"${PATH_SYSCONFDIR}"
 CPPFLAGS += -D_PATH_SYSCONFDIR=${_PATH_SYSCONFDIR:Q}
 
-# Note:  If your platform does have libwrap (and tcpd.h), but they're not in in
-# a system directory searched by default then you can pass appropriate -I and -L
-# flags by setting CPPFLAGS and LDFLAGS in the environment.
+# Fingerd only supports POSIX IEEE Std 1003.1-2001, IEEE Std 1003.2-1992, and it
+# should still be C89 compatible.
 #
-CPPFLAGS ?=	# Additional preprocessor flags, e.g. -I/usr/local/include
-LDFLAGS ?=	# Additional linker flags, e.g. -I/usr/local/lib
+# Fingerd requires a 4.4BSD compatible syslog(3) [with openlog(3)]; as well as
+# libwrap [XXX currently we are using the old compatibility function rfc931()
+# from libwrap, but may eventually use ident_lookup(3) from libident instead]
 #
-# N.B.:  You CANNOT set make variables on the command line if they must be
-# adjusted within a Makefile -- they can only be set in the environment!
-# Variables set on the command line are effectively always set last, after all
-# Makefiles have been read and processed.
+# However N.B.:  actually the code in here is still partly pre-c89, but most
+# compilers begrudgingly accept it!
 #
-# XXX change to use ident_lookup(), and do some dance to find libident?
+CSTD=			c89
+
+# XXX also use ident_lookup(), from libident?
 #
 CPPFLAGS += -DHAVE_LIBWRAP
 LDADD += -lwrap
@@ -67,9 +61,9 @@ DOCS =		AUTHORS COPYING NEWS README THANKS ToDo
 
 # XXX these should also be put in ${PREFIX}/share/examples/${PACKAGE_NAME} for packages
 #
-FFILES=	${.CURDIR}/samples/fingerd.acl \
-	${.CURDIR}/samples/fingerd.motd \
-	${.CURDIR}/samples/fingerd.users
+FILES=	samples/fingerd.acl \
+	samples/fingerd.motd \
+	samples/fingerd.users
 
 version.o: Makefile
 
@@ -92,16 +86,32 @@ CLEANFILES += fingerd.8
 
 docs: .PHONY ${DOCS} ${MAN}
 
+# N.B.:  ATTENTION SYSTEM INTEGRATORS:
+#
+# In NetBSD the installation of configuration files is done at "make
+# distribution" time (which is part of "make release" but also allowed
+# separately).  This step is optimised so that it doesn't have to descend
+# recursively through every source directory and Makefile in the project, but as
+# a result that means there must be a hook in src/etc/Makefile.  It could also
+# be done with <bsd.files.mk>, which is then triggered with a "configinstall"
+# target, but again that still needs the hook in src/etc/Makefile!
+#
+# So, to avoid further portability complications with also including
+# <bsd.files.mk> we'll just provide a "distribution" target here and any systems
+# integrators will have to ensure it gets called at the right time in their
+# release process.
+#
 distribution:	# install sample configuration files
 distribution: .PHONY
-	cd ${.CURDIR}/samples; \
-		${INSTALL} -c -o root -g wheel -m 644 ${FFILES} ${DESTDIR}/etc
+.for _F in ${FILES:O:u}
+	${INSTALL} -c -o root -g wheel -m 644 ${.CURDIR}/${_F} ${DESTDIR}/etc
+.endfor
 
 .include <bsd.prog.mk>
 
 #
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj dependall")
+# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj depend all")
 # End:
 #
