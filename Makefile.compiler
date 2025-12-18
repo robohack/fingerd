@@ -25,11 +25,11 @@
 #
 # to see what specific optimizations are enabled by -O*:
 #
-#	echo "" | gcc -O[0123] -S -fverbose-asm -o - -x c -
+#	echo "" | cc -O[0123] -S -fverbose-asm -o - -x c -
 #
 # to show search paths and "as" and linker commands:
 #
-#	echo "" | gcc -v -x c -
+#	echo "" | cc -v -x c -
 #
 #
 # N.B.:  these tricks do not work for lcc
@@ -405,7 +405,9 @@ OPTIM = -O2
 . if defined(__GNULD__) && ${__GNULD__} >= 1
 #LDFLAGS += -Wl,--warn-common
 #LDFLAGS += -Wl,--fatal-warnings
+.  if !defined(USE_ASAN)
 LDFLAGS += -Wl,--unresolved-symbols=report-all
+.  endif
 #LDFLAGS += -Wl,--error-unresolved-symbols
 . else
 .  if !empty(${DBG:M-g})
