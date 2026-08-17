@@ -76,6 +76,12 @@ extern char     version[];
 # endif
 #endif
 
+extern const char	*argv0;
+
+#ifdef DEBUG
+extern int		debug;
+#endif
+
 __BEGIN_DECLS
 access_e        access_check __P((char *name, char *host));
 void            run_program __P((char *program, char **args)) __dead;

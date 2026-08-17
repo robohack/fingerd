@@ -53,6 +53,10 @@ const char     *argv0 = PACKAGE_NAME;
 char            cd[] = _PATH_SYSCONFDIR;
 char           *confdir = &cd[0];
 
+#ifdef DEBUG
+int debug = 1;
+#endif
+
 extern char    *optarg;
 extern int      optind;
 extern int      opterr;

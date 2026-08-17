@@ -126,7 +126,7 @@ run_user_cmd(name, ruser, rhost)
 	if ((fp = fopen(conf_file_path(FINGERD_USERS_FILE), "r")) == NULL) {
 #ifdef DEBUG
 		if (debug)
-			syslog(LOG_ERR, "run_user_cmd(): open(%s) failed: %m", argv0, pn_acl);
+			syslog(LOG_ERR, "run_user_cmd(): open(%s) failed: %m", argv0, FINGERD_USERS_FILE);
 #endif
 		return 0;
 	}

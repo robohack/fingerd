@@ -44,10 +44,6 @@
 
 #include "fingerd.h"
 
-#ifdef DEBUG
-static int debug = 1;
-#endif
-
 access_e
 access_check(user, host)
 	char           *user;
@@ -71,7 +67,7 @@ access_check(user, host)
 	if (!(fp = fopen(conf_file_path(FINGERD_ACCESS_FILE), "r"))) {
 #ifdef DEBUG
 		if (debug)
-			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, pn_acl, strerror(errno));
+			fprintf(stderr, "%s: open(%s) failed: %s.\n", argv0, FINGERD_ACCESS_FILE, strerror(errno));
 #endif
 		return ACCESS_GRANTED;
 	}
