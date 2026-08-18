@@ -1,10 +1,10 @@
 # -*- makefile-bsdmake -*-
-#
+
 #	Makefile.inc - Common/shared setup for BSD Makefiles
 #
-#	This should be included at the top of all your Makefiles
+# The canonical source for this file is in https://github.com/robohack/yajl
 #
-# Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
+# Copyright (C) 2026 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
@@ -12,15 +12,93 @@
 
 # WARNING!!!  Do not put any targets in here!
 
-# N.B.:  Nothing in here should be changed just to build this project.
+# N.B.:  Normally nothing in here should be changed just to build this project.
 #
-# (Some settings can be overridden on the command-line or from environment
-# variables though...)
+# Some settings can be overridden on the command-line or from environment
+# variables though.  See "bsdmake help".
+#
+# NOTICE:  Nothing below here _should_ be project dependent, however some
+# settings such as BINDIR, etc. might need to be changed for other projects.
 
-# XXX see SJG's SSLrsh release for simple portability hacks via Make
-# e.g. in particular the use of .-include "$Makefile.${MACHINE}.inc" etc.
+# XXX see SJG's SSLrsh release for simple portability hacks via Make e.g. in
+# particular the use of .-include "Makefile.${.MAKE.OS}.inc", etc.
 
-# NOTICE:  Nothing below here _should_ be project dependent
+# For any subdirectory Makefiles this ${bmake_topdir} is provided to help find
+# the project's root directory.
+#
+# N.B.:  the top-level Makefile is not expected to ever have to use this value
+# though!
+#
+bmake_topdir = ..
+#
+# ${bmake_topdir} is used to allow values in LDADD, DPADD, and CPPFLAGS (or
+# CFLAGS) to directly reference both products and sources in other parts of the
+# tree, especially if they are set in this file (though use directly in subdir
+# makefiles can help them be more readable).  This is particularly useful for a
+# project that builds a library used by other programs in the same project,
+# and/or which may also build header files shared by several sources in
+# different directories in the same project.
+#
+# For example this file can be used to define the version number(s) for the
+# project, and thus sources which use these numbers (header file templates, or
+# shared library filenames, etc), can add a dependency on this file as follows:
+#
+#	version.h: ${.CURDIR}/version.h.in ${.CURDIR}/${bmake_topdir}/Makefile.inc
+#
+# This file is included by default from any subdirectory makefile by BSD Make's
+# standard files, or at least via any of the standard <bsd.*.mk> files which are
+# used by makefiles intended to build some actual target.  Normally this happens
+# very early on, just before <bsd.own.mk> is included, and it is done by
+# sub-directory makes.  For most implementations certain system variables must
+# be defined before <bsd.own.mk> is included, and so they can be defined here.
+# See below though for why this also includes <bsd.own.mk> itself half-way
+# through.  As such we depend on the standard <bsd.*.mk> files protecting
+# themselves from multiple inclusions, and though this was not true on the
+# original CSRG BSD releases it has been done now in all modern releases.
+#
+# Note also that this is only included by default by Makefiles using standard
+# <bsd.*.mk> files in an immediate subdirectory -- i.e. it is done as follows:
+#
+#	.include "${.CURDIR}/../Makefile.inc"
+#
+# Thus the top level Makefile may need to directly include this file, but it
+# must only do so after it has defined the default target (i.e. the .MAIN
+# target, normally "all").  The top level Makefile should not (need to) use
+# ${bmake_topdir}.
+#
+# This also means that in any project with deeper source trees it may be
+# necessary to create a "Makefile.inc" in intermediate sub-directories in order
+# for this file to be shared to the deeper sub-directories.  The intermediate
+# "Makefile.inc" files should have the following content:
+#
+#	# -*- makefile-bsdmake -*-
+#	#
+#	# N.B.:  ${.CURDIR} here is not needed -- it's already implied because of the
+#	# include done by <bsd.prog.mk> in the subdir's Makefile
+#	.include "../Makefile.inc"
+#	bmake_topdir := ${bmake_topdir}/..
+
+#bmake_srcdir =	${.CURDIR}/${bmake_topdir}
+#
+#CPPFLAGS +=	-I${bmake_srcdir}
+
+# This can define common project-specific variables, such as LIB_* version IDs
+# which might be needed in subdirectory Makefiles.
+#
+.-include "Makefile.project"
+
+# The full version ID for a library
+#
+LIB_VERSION =	${LIB_MAJOR}.${LIB_MINOR}.${LIB_MICRO}
+
+# note: FreeBSD <bsd.subr.mk> effectively turns off SUBDIR_PARALLEL for installs
+#
+.if make(install) && \
+	defined(MAKE_VERSION) && ${MAKE_VERSION} < 20240414 && \
+	(!defined(.FreeBSD) || ${.FreeBSD} != "true") && \
+	${.MAKEFLAGS:M-j} == "-j"
+. error "Parallel installs are not supported with older BMakes"
+.endif
 
 # For testing and debugging -- at least on sane systems, or with 'bmake'
 #
@@ -37,28 +115,46 @@ LDSTATIC ?=	# set to '-static' for static linking
 
 # If you are making changes and want to be sure to clean up all warnings....
 #
-#CWARNFLAGS += -Werror
+#CWARNFLAGS +=	-Werror
 # else
-NOGCCERROR = 1
-WARNS = 0
+NOGCCERROR ?= 1
+WARNS ?= 0
 
 # Installation directories
 #
 # N.B.:  ${DESTDIR} if set on the 'install' command line, it is also prepended
-# to each of these target directories.
+# to each of these target directories for actual installation targets.
 #
+# XXX Note that NetBSD's bsd.shlib.mk magic keys off the value of BINDIR (or
+# MKDYNAMICROOT) in order to set the location of SHLIBDIR and SHLINKDIR, which
+# in turn then determine which dynamic linker is set for the generated binaries
+# (when linking non-statically), so don't set PREFIX to an empty value if you
+# don't have /libexec/ld.elf_so and you don't have MKDYNAMICROOT=no set
+# somewhere (e.g. /etc/mk.conf)!
+#
+# this next line is just for "bsdmake help"
 DESTDIR ?=	# set to the installation prefix
 #
 INSTALL_OPTS =	# for specific ownerships
-# these will be over-ridden by pkgsrc
-BINDIR ?= /bin
-INCSDIR ?= /include${INCSUBDIR}
-LIBDIR ?= /lib
-DEBUGDIR ?= /libdata/debug
-LINTLIBDIR ?= /libdata/lint
-SHAREDIR ?= /share
-DOCDIR ?= ${SHAREDIR}/doc
-MANDIR ?= ${SHAREDIR}/man
+#
+# these *DIRs will be over-ridden by pkgsrc
+#
+# N.B.:  Normally in the system source tree an override of BINDIR is set in the
+# Makefile.inc in the parent directory, e.g. for some program living in
+# /usr/src/libexec/somedaemon, it would be in /usr/src/libexec/Makefile.inc
+#
+BINDIR ?=	/bin	# usually /bin, but may be /libexec, etc.
+INCSDIR ?=	/include${INCSUBDIR}
+LIBDIR ?=	/lib
+DEBUGDIR ?=	/libdata/debug
+LINTLIBDIR ?=	/libdata/lint
+SHAREDIR ?=	/share
+DOCDIR ?=	${SHAREDIR}/doc
+MANDIR ?=	${SHAREDIR}/man
+
+# hmmmm....  This apparently has no precedent in the world of BSD Make.  Base it
+# off of LIBDIR....
+PKGCONFIGDIR ?= ${LIBDIR}/pkgconfig
 
 # xxx all this otherwise some systems won't allow unprivileged installs
 .if ${USER} != "root"
@@ -97,26 +193,7 @@ LIBCRTEND =		# empty
 SHLIB_LDSTARTFILE =	# empty
 SHLIB_LDENDFILE =	# empty
 
-# note MAKECONF may override
-MKHTML ?=	yes	# set to no to avoid building HTML manual pages
-
 # Finally some common settings
-#
-# N.B.:  all sub-directory Makefiles must set ${bmake_topdir} to be a relative
-# path to the top of the source tree.  This would not be necessary if/when all
-# supported BSDMake versions have the ${.MAKE.LEVEL} feature.  ${.MAKE.LEVEL}
-# was first found in NetBSD-current after 2009/09/08 but it is not found in any
-# release until 6.0.  Unfortunately there is no easy way to know definitively
-# what version of BSDMake is being used.  Simon Gerraty's bmake has
-# MAKE_VERSION, as does FreeBSD's make though they are entirely and totally
-# different and unrelated.  In NetBSD MAKE_VERSION was only briefly present
-# since it represented the build date, not the release date, and it was removed
-# in order to make it possible to do reproducible builds.
-#
-#bmake_topdir ?= # empty
-#bmake_srcdir =	${.CURDIR}/${bmake_topdir}
-#
-#CPPFLAGS +=	-I${bmake_srcdir}
 
 # yes, always -- we use this because it's safer when using a shared network
 # directory for building/testing/etc.  (though it is sometimes somewhat
@@ -127,12 +204,131 @@ OBJMACHINE ?=		yes
 OBJMACHINE_ARCH ?=	yes
 # XXX ideally this would be "auto", but that is not yet very widely supported.
 # See Makefile.end.
-MKOBJDIRS =		yes
+MKOBJDIRS ?=		yes
+
+# note MAKECONF may override
+MKHTML ?=		yes	# set to 'no' to avoid building HTML manual pages
+
+# xxx on NetBSD <bsd.sys.mk> sets this just to "paxctl", so if /usr/sbin isn't
+# in the caller's PATH it fails
+#
+PAXCTL ?=		/usr/sbin/paxctl
+
+# Because we don't do "make includes" in private projects, we need to allow
+# other program products to be built with reference to the original source
+# header files.
+#
+# The .if here is annoying, but some older systems, and modern FreeBSD, don't
+# support CPPFLAGS.
+#
+.if defined(CPPFLAGS)
+CPPFLAGS +=	-I${.CURDIR}/${bmake_topdir}/src
+.else
+CFLAGS +=	-I${.CURDIR}/${bmake_topdir}/src
+.endif
+
+# N.B.:  testing in the build or 'install' (distribution) directories, or making
+# a distribution that can be un-packed on a target system in any arbitrary
+# hierarchy (/usr/local, /opt, /usr/pkg, etc.)  is "hard" (i.e. annoyingly more
+# difficult than it should be) without dancing with the dynamic linker.  (Or
+# suffering the horrors of even worse monstrosities, such as "GNU libtool"!)
+#
+# Setting LDSTATIC to the linker flag which forces static linking is the easy
+# and best fix on most platforms which support full static linking.
+#
+# This will only have effect on some BSDs, not Darwin/OSX/macOS, nor FreeBSD,
+# and it is added to LDFLAGS by the system mk-files (sys.mk in general, but also
+# <bsd.prog.mk> sometimes.  Note that most of the sanitizers don't work when
+# static-linked.
+#
+#LDSTATIC =	-static
+#
+# However, sadly, OS X does not support a command-line way of forcing static
+# linking (nor does Solaris?).  As a result on OS X if you want to test programs
+# without first installing the library in its final destination directory then
+# it is necessary to set the variable DYLD_LIBRARY_PATH in the environment to
+# include the location of the library to be tested against.
+#
+# So, instead of making testing onerous for OS X we use a common trick of giving
+# the static library a unique name, such as by appending "_s" or similar to it,
+# in order to make it different from the normal name of the dynamic library and
+# thus we can trick the linker into thinking there is only a static library
+# available.  (This is actually done with a symlink in order to preserve normal
+# naming conventions for the actual file.)
+#
+# Note that the .pc file as-built (for pkgconf, or the older pkg-config, may
+# still require adjustments after a "dist" archive is un-packed since it may not
+# have been original configured for the final installation directory).
+#
+# XXX this is, very unfortunately, somewhat ugly and package dependent!
+#
+# Program and test directories need to reference the static library so that they
+# can be run from their build directory without the library having yet been
+# installed, so we use "-l${PACKAGE_NAME:S/^lib//}_s" to do the linking.  (Note
+# some packages include "lib" as the prefix in their package name!)
+#
+# Note:  In order to avoid problems with parallel builds LDADD and DPADD should
+# not be set in src/Makefile, thus this .if:
+#
+# XXX Handling ${.OBJDIR} both with and without use of ${MAKEOBJDIRPREFIX} is
+# tedious.
+#
+# XXX XXX how to handle both projects building a library, and those without?
+#
+# LDADD and DPADD here are intended for projects building a library and then
+# also building some tools and/or tests that depend on said library.
+#
+# The !defined(LIB) avoids setting these when building the library itself, so
+# for now we rely on a Makefile.project file setting LIB_MAJOR.
+#
+# see src/Makefile for where LIB is set
+#
+.if !defined(LIB) && defined(LIB_MAJOR)
+. if defined(MAKEOBJDIRPREFIX)
+# then .OBJDIR is from MAKEOBJDIRPREFIX
+LDADD += -L${.OBJDIR}/${bmake_topdir}/src
+DPADD += ${.OBJDIR}/${bmake_topdir}/src/lib${PACKAGE_NAME:S/^lib//}.a
+. elif defined(MAKEOBJDIR)
+LDADD += -L${MAKEOBJDIR}/${bmake_topdir}/src
+DPADD += ${MAKEOBJDIR}/${bmake_topdir}/src/lib${PACKAGE_NAME:S/^lib//}.a
+. else
+# assume .OBJDIR is a local directory, so look for bmake_topdir from the parent
+LDADD += -L../${bmake_topdir}/src/${.OBJDIR:T}
+DPADD += ../${bmake_topdir}/src/${.OBJDIR:T}/lib${PACKAGE_NAME:S/^lib//}.a
+. endif
+LDADD += -l${PACKAGE_NAME:S/^lib//}_s
+#
+# If we're compiling programs to link with lib${PACKAGE_NAME}_s.a then on some
+# systems we cannot compile or link them with -fPIC or -fPIE, so disable that
+# here.
+#
+# Note this normally only affects <bsd.prog.mk> Makefiles, not libs, even if it
+# wasn't wrapped here in ".if !defined(LIB)".
+#
+# Note however that most of the sanitizers don't work when static-linked.
+#
+. if (defined(TARGET_OSNAME) && (${TARGET_OSNAME} == "Darwin")) || defined(.FreeBSD)
+# for both FreeBSD and Mac OS X....
+NO_SHARED = YES
+.else
+NOSHARED = YES
+. endif
+.endif # !defined(LIB)
+
+.if defined(MAKEOBJDIRPREFIX)
+# .OBJDIR is from MAKEOBJDIRPREFIX
+GENHDIR = ${.OBJDIR}/${bmake_topdir}/src
+.elif defined(MAKEOBJDIR)
+GENHDIR = ${MAKEOBJDIR}/${bmake_topdir}/src
+.else
+# assume .OBJDIR is a local directory, so look in the parent
+GENHDIR += ${.OBJDIR}/../${bmake_topdir}/src/${.OBJDIR:T}
+.endif
 
 # Default build targets -- see Makefile.end
 #
-# Yes, "make obj" is forced -- it is stupid to build in the source directory)
-# (forcing "make depend" is also good, though a bit of a waste for pkgsrc.
+# Yes, "bsdmake obj" is forced -- it is stupid to build in the source directory)
+# (forcing "bsdmake depend" is also good, though a bit of a waste for pkgsrc.
 #
 # Note with some versions of "bmake" this will cause obj* directories to be
 # created in the existing obj* directories the second time around...
@@ -142,9 +338,64 @@ BUILDTARGETS +=	.WAIT
 BUILDTARGETS +=	bmake-do-depend
 BUILDTARGETS +=	.WAIT
 
+# Most implementations do not make 'regress' depend on first building everything
+# but we need to build everything before we can do any testing.  This is done
+# because 'regress' is an optional target and meant to be called directly, and
+# so it should probably try its best to make sure everything is up to date
+# before it tries to test those things.
 #
+# N.B.:  this must be included by all sub-directory Makefiles!
+#
+# XXX for some reason even NetBSD Make requires the odd trailing .WAIT
+#
+regress: all .WAIT	# run regression tests
+
+# Makefile debugging support
+#
+showenv: _GAW_bmake-showenv .PHONY
+
+_GAW_bmake-showenv: .PHONY
+	@echo "" ; \
+	echo "bmake_topdir = '${bmake_topdir}'"; \
+	echo "${.OBJDIR}/${bmake_topdir}/src"; \
+	if [ -d "${.OBJDIR}/${bmake_topdir}/src" ]; then \
+		echo "the directory shown above exists!"; \
+	fi; \
+	echo "Makefile.inc: ${.CURDIR}/${bmake_topdir}/Makefile.inc"; \
+	if [ -f "${.CURDIR}/${bmake_topdir}/Makefile.inc" ]; then \
+		echo "the file shown above exists!"; \
+	else \
+		echo "Where is ${.CURDIR}/${bmake_topdir}/Makefile.inc?"; \
+	fi; \
+	echo ""; \
+	echo "Some Interesting Vars:"; \
+	echo "unix = ${unix:Q}"; \
+	echo "MAKE_VERSION = ${MAKE_VERSION:Q}"; \
+	echo ".FreeBSD = ${.FreeBSD:Q}"; \
+	echo ".CURDIR = ${.CURDIR:Q}"; \
+	echo "MAKEOBJDIR = ${MAKEOBJDIR:Q}"; \
+	echo "MAKEOBJDIRPREFIX = ${MAKEOBJDIRPREFIX:Q}"; \
+	echo ".OBJDIR = ${.OBJDIR:Q}"; \
+	echo ".OBJDIR:T = ${.OBJDIR:T:Q}"; \
+	echo "MKOBJDIRS = ${MKOBJDIRS:Q}"; \
+	echo "_BSD_OWN_MK_ = ${_BSD_OWN_MK_:Q}"; \
+	echo "GENHDIR = ${GENHDIR:Q}"; \
+	echo "DEBUGDIR = ${DEBUGDIR:Q}"; \
+	echo "LINTLIBDIR = ${LINTLIBDIR:Q}"; \
+	echo "MAKECONF = ${MAKECONF:Q}"; \
+	echo "MKDEBUG = ${MKDEBUG:Q}"; \
+	echo "MKDEBUGLIB = ${MKDEBUGLIB:Q}"; \
+	echo "MKDYNAMICROOT = ${MKDYNAMICROOT:Q}"; \
+	echo "MKLINT = ${MKLINT:Q}"; \
+	echo "LDADD = ${LDADD:Q}"; \
+	echo "DPADD = ${DPADD:Q}"; \
+	echo "MANDIR = ${MANDIR:Q}"; \
+	echo "INC_COPY = ${INC_COPY:Q}"; \
+	echo "FILES_COPY = ${FILES_COPY:Q}"; \
+	echo ""
+
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj depend all")
+# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -m)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static all")
 # End:
 #
