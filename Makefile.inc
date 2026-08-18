@@ -2,6 +2,8 @@
 
 #	Makefile.inc - Common/shared setup for BSD Makefiles
 #
+# This file is used by projects being built outside of a BSD source tree.
+#
 # The canonical source for this file is in https://github.com/robohack/yajl
 #
 # Copyright (C) 2026 Greg A. Woods - This work is licensed under the Creative
@@ -10,7 +12,7 @@
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
 #
 
-# WARNING!!!  Do not put any targets in here!
+# WARNING!!!  Do not put any targets in here without great care to protect them!
 
 # N.B.:  Normally nothing in here should be changed just to build this project.
 #
@@ -85,6 +87,12 @@ bmake_topdir = ..
 # This can define common project-specific variables, such as LIB_* version IDs
 # which might be needed in subdirectory Makefiles.
 #
+# If a project is used inside a BSD source tree then Makefile.project should be
+# renamed to Makefile.inc (i.e. replacing this file).
+#
+# N.B.:  ${.CURDIR} here is not needed here either because the directory this
+# Makefile.inc was included from is part of the set of directories searched.
+#
 .-include "Makefile.project"
 
 # The full version ID for a library
@@ -131,9 +139,6 @@ WARNS ?= 0
 # (when linking non-statically), so don't set PREFIX to an empty value if you
 # don't have /libexec/ld.elf_so and you don't have MKDYNAMICROOT=no set
 # somewhere (e.g. /etc/mk.conf)!
-#
-# this next line is just for "bsdmake help"
-DESTDIR ?=	# set to the installation prefix
 #
 INSTALL_OPTS =	# for specific ownerships
 #
@@ -335,8 +340,68 @@ GENHDIR += ${.OBJDIR}/../${bmake_topdir}/src/${.OBJDIR:T}
 #
 BUILDTARGETS =	bmake-do-obj
 BUILDTARGETS +=	.WAIT
+
+# Forcing "make depend" is also both good, and necessary as a beforedepend
+# target in a subdirectory can be used to create "built" header files, for
+# example.
+#
 BUILDTARGETS +=	bmake-do-depend
 BUILDTARGETS +=	.WAIT
+
+# ("docs" should probably come after "all", but should also be able to be built
+# in parallel with sources)
+BUILDTARGETS +=	bmake-do-docs
+
+# Special case additional convenience targets
+#
+# N.B.:  these must be included by all sub-directory Makefiles!
+#
+# In NetBSD all TARGETS are candidates for making in the SUBDIR list
+#
+# (but avoid creating TARGETS if it doesn't exist)
+#
+.if !empty(TARGETS)
+. if empty(TARGETS:Mdocs)
+TARGETS +=	docs
+. endif
+. if empty(TARGETS:Mregress)
+TARGETS +=	regress
+. endif
+. if empty(TARGETS:Mtags)
+TARGETS +=	tags
+. endif
+. if empty(TARGETS:MTAGS)
+TARGETS +=	TAGS
+. endif
+. if empty(TARGETS:Mshowenv)
+TARGETS +=	showenv
+. endif
+.else
+#
+# In FreeBSD and sjg's Mk-files the list of SUBDIR_TARGETS cannot be appended to
+# after including <bsd.subdir.mk>, but most of the interesting targets, such as
+# some of these below, are not added to the default value of SUBDIR_TARGETS
+# until it is included, so it's pointless to check here if they're already in
+# the list.
+#
+# Note:  In FreeBSD SUBDIR_TARGETS was once reserved for adding custom targets
+# that should recurse into subdirs, and the main meat was in ALL_SUBDIR_TARGETS,
+# but again that couldn't be seen until after <bsd.subdir.mk> was included.
+#
+# "regress" was once a default for FreeBSD, but not for some time now.
+#
+SUBDIR_TARGETS +=	docs
+SUBDIR_TARGETS +=	regress
+SUBDIR_TARGETS +=	showenv
+SUBDIR_TARGETS +=	TAGS
+.endif
+
+# default targets for the extra ones added to TARGETS above (to avoid "don't
+# know how to make" errors)
+#
+# N.B.:  the attempt to use !target() may fail if including <bsd.own.mk> has not
+# defined the proper default targets (i.e. if they are defined somewhere later
+# after this file is already parsed), but for these this will not likely matter.
 
 # Most implementations do not make 'regress' depend on first building everything
 # but we need to build everything before we can do any testing.  This is done
@@ -344,14 +409,46 @@ BUILDTARGETS +=	.WAIT
 # so it should probably try its best to make sure everything is up to date
 # before it tries to test those things.
 #
-# N.B.:  this must be included by all sub-directory Makefiles!
-#
 # XXX for some reason even NetBSD Make requires the odd trailing .WAIT
 #
+.if target(all) && !target(regress)
 regress: all .WAIT	# run regression tests
+.endif
+
+.if target(all) && !target(tags)
+# avoid :U for older bmakes
+. if !defined(TOOL_CTAGS)
+_TOOL_CTAGS = ctags
+. else
+_TOOL_CTAGS = ${TOOL_CTAGS}
+. endif
+tags: ${SRCS}
+. if defined(SRCS)
+	-cd ${.CURDIR} && ${_TOOL_CTAGS} -f /dev/stdout ${.ALLSRC:N*.h} | \
+	    ${TOOL_SED} "s;\${.CURDIR}/;;" > ${.TARGET}
+. endif
+.endif
+
+.if target(all) && !target(TAGS)
+# avoid :U for older bmakes
+. if !defined(TOOL_ETAGS)
+_TOOL_ETAGS = etags
+. else
+_TOOL_ETAGS = ${TOOL_ETAGS}
+. endif
+TAGS: ${SRCS}
+. if defined(SRCS)
+	-cd ${.CURDIR} && ${_TOOL_ETAGS} -I -l c -o ${.TARGET} ${.ALLSRC:N*.h}
+. endif
+.endif
+
+.if target(all) && !target(docs)
+docs: .PHONY
+.endif
 
 # Makefile debugging support
 #
+.if target(all) && !target(showenv)
 showenv: _GAW_bmake-showenv .PHONY
 
 _GAW_bmake-showenv: .PHONY
@@ -393,6 +490,11 @@ _GAW_bmake-showenv: .PHONY
 	echo "INC_COPY = ${INC_COPY:Q}"; \
 	echo "FILES_COPY = ${FILES_COPY:Q}"; \
 	echo ""
+.endif
+
+# finally we include Makefile.compiler
+#
+.include "Makefile.compiler"
 
 # Local Variables:
 # eval: (make-local-variable 'compile-command)

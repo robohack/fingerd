@@ -3,7 +3,9 @@
 #	Makefile.end - This should be included at the end of your Makefile
 #	(after Makefile.main)
 #
-# Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
+# The canonical source for this file is in https://github.com/robohack/yajl
+#
+# Copyright (C) 2026 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
@@ -11,6 +13,56 @@
 
 # This file contains default boilerplate to support stand-alone builds,
 # i.e. builds outside of a BSD system source tree.
+
+.if !empty(SUBDIR)
+#
+# The next section is mostly just default boilerplate for stand-alone projects
+# with subdirectories.
+#
+# Yes, "make obj" is forced -- it is stupid to build in the source directory)
+# (and no, use of MKOBJDIRS to control this is not supported)
+#
+# This does mean nothing else can be made in the top directory though.
+#
+# Note with some versions of Simon's "mk-files" this will cause obj* directories
+# to be created in the existing obj* directories the second time around...
+#
+# N.B.:  These .WAIT's should be OK as they end up in a dependency list.
+#
+# XXX extra hoops to jump through for (newer?) FreeBSD -- see below for more!
+#
+# Despite being included in the SUBDIR_TARGETS, obj, depend, and docs don't
+# actually recurse into subdirs without all this extra goop!
+#
+.if (defined(.FreeBSD) && (${.FreeBSD} == "true"))
+. for __dir in ${SUBDIR:N.WAIT}
+BUILDTARGETS +=	obj_subdir_${__dir}
+. endfor
+.endif
+.if (defined(.FreeBSD) && (${.FreeBSD} == "true"))
+BUILDTARGETS +=	.WAIT
+. for __dir in ${SUBDIR:N.WAIT}
+BUILDTARGETS +=	depend_subdir_${__dir}
+. endfor
+.endif
+.if (defined(.FreeBSD) && (${.FreeBSD} == "true"))
+BUILDTARGETS +=	.WAIT
+. for __dir in ${SUBDIR:N.WAIT}
+BUILDTARGETS +=	docs_subdir_${__dir}
+. endfor
+.endif
+
+# XXX extra hoops to jump through for (newer?) FreeBSD
+#
+.if (defined(.FreeBSD) && (${.FreeBSD} == "true"))
+. for __targ in obj depend docs
+.  for __dir in ${SUBDIR:N.WAIT}
+${__dir}: ${__targ}_subdir_${__dir} .PHONY .MAKE
+.  endfor
+. endfor
+.endif
+
+.endif # !empty(SUBDIR)
 
 # Bmake systems don't support a "dependall" target
 #
@@ -21,6 +73,8 @@
 .if !target(dependall)
 dependall: .PHONY .NOTMAIN depend .WAIT all
 .endif
+
+#.ORDER: bmake-test-obj bmake-do-obj bmake-do-depend bmake-do-docs
 
 # bmake-do-obj is given a dependency on "obj" (see below), thus causing "make
 # obj".  Once that's done we get back to bmake-test-obj-again to see if we
@@ -119,94 +173,6 @@ install-docs: .PHONY beforeinstall .WAIT docs
 #beforecleandir: cleandir
 #	rmdir ${.OBJDIR}
 
-# Some additional convenience targets.
-#
-# XXX Note these may not work right for projects with subdirectories
-#
-# In NetBSD all TARGETS are candidates for making in the SUBDIR list
-#
-# (but avoid creating TARGETS if it doesn't exist)
-#
-.if !empty(TARGETS)
-. if empty(TARGETS:Mdocs)
-TARGETS +=	docs
-. endif
-. if empty(TARGETS:Mregress)
-TARGETS +=	regress
-. endif
-. if empty(TARGETS:Mtags)
-TARGETS +=	tags
-. endif
-. if empty(TARGETS:MTAGS)
-TARGETS +=	TAGS
-. endif
-. if empty(TARGETS:Mshowenv)
-TARGETS +=	showenv
-. endif
-.else
-#
-# In FreeBSD and sjg's Mk-files the list of SUBDIR_TARGETS cannot be appended to
-# after including <bsd.subdir.mk>, but most of the interesting targets, such as
-# some of these below, are not added to the default value of SUBDIR_TARGETS
-# until it is included, so it's pointless to check here if they're already in
-# the list.
-#
-# Note:  In FreeBSD SUBDIR_TARGETS was once reserved for adding custom targets
-# that should recurse into subdirs, and the main meat was in ALL_SUBDIR_TARGETS,
-# but again that couldn't be seen until after <bsd.subdir.mk> was included.
-#
-# "regress" was once a default for FreeBSD, but not for some time now.
-#
-# XXX Dunno why I added obj, depend, and tags.  They've been there in FreeBSD
-# for a long time.
-#
-#SUBDIR_TARGETS +=	obj
-#SUBDIR_TARGETS +=	depend
-SUBDIR_TARGETS +=	docs
-SUBDIR_TARGETS +=	regress
-#SUBDIR_TARGETS +=	tags
-SUBDIR_TARGETS +=	TAGS
-SUBDIR_TARGETS +=	showenv
-.endif
-
-#
-# some default targets for the extra ones added to TARGETS above
-#
-# N.B.:  the attempt to use !target() may fail if including <bsd.own.mk> has not
-# defined the proper default targets (i.e. if they are defined somewhere later
-# after this file is already parsed), but for these this will not likely matter.
-
-.if !target(tags)
-# avoid :U for older bmakes
-.if !defined(TOOL_CTAGS)
-_TOOL_CTAGS = ctags
-.else
-_TOOL_CTAGS = ${TOOL_CTAGS}
-.endif
-tags: ${SRCS}
-.if defined(SRCS)
-	-cd ${.CURDIR} && ${_TOOL_CTAGS} -f /dev/stdout ${.ALLSRC:N*.h} | \
-	    ${TOOL_SED} "s;\${.CURDIR}/;;" > ${.TARGET}
-.endif
-.endif
-
-.if !target(TAGS)
-# avoid :U for older bmakes
-.if !defined(TOOL_ETAGS)
-_TOOL_ETAGS = etags
-.else
-_TOOL_ETAGS = ${TOOL_ETAGS}
-.endif
-TAGS: ${SRCS}
-.if defined(SRCS)
-	-cd ${.CURDIR} && ${_TOOL_ETAGS} -I -l c -o ${.TARGET} ${.ALLSRC:N*.h}
-.endif
-.endif
-
-.if !target(docs)
-docs: .PHONY
-.endif
-
 #
 # for NetBSD integration:
 #
@@ -237,10 +203,6 @@ ${TARBASE}: .PHONY
 	pax -wvz -s '|^|$@/|' -f ${TMPDIR}/$@.tar.gz *
 tar: .PHONY ${TARBASE}
 
-# finally include the compiler settings helpers
-#
-.include "${.CURDIR}/Makefile.compiler"
-
 #
 # "make help" support, inspired by Julio Merino
 #
@@ -263,6 +225,9 @@ help: Makefile Makefile.main Makefile.inc Makefile.end
 	@echo
 	@sed -Ene 's/^([^#: \	]{1,}):.*#(.*)$$/\1:\	\2/p' $> | column -s '	' -t | sort
 	@echo
+
+# XXX this next line is just for "bsdmake help" -- it only works for <bsd.subdir.mk>!
+DESTDIR ?=	# set to the installation prefix
 
 # MAKEOBJDIR='${.CURDIR:C,^'$(pwd -P)','$(pwd -P)'/build'-$(uname -s)-$(uname -m)-$(uname -p)',}' make -j 8 obj .WAIT depend all
 #
