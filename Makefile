@@ -1,6 +1,6 @@
 # -*- makefile-bsdmake -*-
 #
-#	Makefile - input for BSD Make
+#	Makefile - common wrapper makefile for BSD Make
 #
 # Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
@@ -8,23 +8,31 @@
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
 #
 
-# This Makefile works with NetBSD Make, OSX bsdmake, Pkgsrc bmake, and
-# Simon Gerraty's Bmake & Mk-files from http://www.crufty.net/FreeWare/.
+# This Makefile (and its associated include files) works with NetBSD Make, and
+# Simon Gerraty's (sjg's) latest BMake from http://www.crufty.net/FreeWare/
+# (with some caveats), and with FreeBSD make.  For many other systems the BMake
+# included in pkgsrc will also work (see https://pkgsrc.org/).  It is as yet
+# untested on OpenBSD.
+#
 # See:  http://www.crufty.net/ftp/pub/sjg/help/bmake.htm
 
 # N.B.:  The main rules for this project are in Makefile.main
 #
-# You can easily use this and the related Makefile sections to wrap any BSD
-# Makefile and use the result to build a simple project outside of the main BSD
-# source tree, e.g. as an add-on package, perhaps on a non-BSD machine, using
-# Simon's Bmake and Mk-files.  Simply rename the original Makefile to
-# Makefile.main, then copy this file, Makefile.inc, Makefile.compiler, and
-# Makefile.end to your project.  If your code is portable enough then no
-# "configure" step will be necessary!
+# You can easily use this and the related Makefile sections and associated
+# include files to wrap any BSD Makefile and use the result to build a simple
+# project outside of the main BSD source tree, e.g. as an add-on package,
+# perhaps on a non-BSD machine, using Simon's Bmake and Mk-files.  Simply rename
+# the original Makefile to Makefile.main, then copy this file, Makefile.inc,
+# Makefile.compiler, and Makefile.end to your project.  If your code is portable
+# enough then no "configure" step will be necessary!  Simple system dependencies
+# can be managed with an optional Makefile.${.MAKE.OS}, etc.
 
 # BUILD:
 #
 #	mkdir -p build; MAKEOBJDIRPREFIX=$(pwd)/build bsdmake obj all
+#
+# (if you skip the "obj", or just run plain "make", you may need to run it twice
+# if the build directory is empty)
 #
 # INSTALL:
 #
@@ -38,57 +46,78 @@
 # HELP:
 #
 #	bsdmake help
+#
+# (where "bsdmake" is the native BSD Make, or is BMake)
 
 # Notes:
 #
-# MAKEOBJDIRPREFIX may also be anywhere outside the source tree, but with some
-# mk files, e.g. on NetBSD, it must exist beforehand.
+# MAKEOBJDIRPREFIX may also be anywhere outside the source tree, but it always
+# must exist beforehand, except on FreeBSD, or Bmake with MKOBJDIRS=auto.
 #
-# Except on FreeBSD you can also just run "make", twice, and a local object
-# directory will be made and used.
+# Note a cross-platform build dir should be something more specific:
+#
+#	BUILD_DIR=build-$(uname -s)-$(uname -p)
+#
+# or possibly even
+#
+#	BUILD_DIR=build-$(uname -s)-$(uname -p)-$(uname -r)
+#
+# On FreeBSD you can just run the "make", twice, and a the object directory will
+# be made and then used (and the first time it will complain about not using it).
+#
+# MAKEOBJDIR can be used instead, though if the project has subdirectories then
+# setting it is far more complex.  Note on older FreeBSD releases the default
+# MAKEOBJDIR was /usr/obj (contrary to what the manual suggested), which is
+# entirely unhelpful for projects independent of the system source tree!
 
-# For the purposes of "make help"
+# On NetBSD the default without MAKEOBJDIRPREFIX or MAKEOBJDIR allows you to get
+# away with just "make obj .WAIT dependall" (the .WAIT is necessary in case you
+# add a '-j N' option), provided the project has no subdirectories.
+
+# Some comments on default settings, mostly for the purposes of "make help":
 #
 # Note:  If your platform does have libwrap (and tcpd.h), but they're not in a
 # system directory searched by default then you can pass appropriate -I and -L
 # flags by setting CPPFLAGS and LDFLAGS in the environment.
 #
-CPPFLAGS ?=	# Additional preprocessor flags, e.g. -I/usr/local/include (in the environment!)
-LDFLAGS ?=	# Additional linker flags, e.g. -I/usr/local/lib (in the environment!)
+CPPFLAGS ?=	# Additional preprocessor flags, e.g. -I/usr/local/include (in env!)
+LDFLAGS ?=	# Additional linker flags, e.g. -I/usr/local/lib (in env!)
 #
 # N.B.:  You CANNOT set make variables on the command line if they must be
-# adjusted within a Makefile -- they can only be set in the environment!
-# Variables set on the command line are effectively always set last, after all
-# Makefiles have been read and processed.
-
-# N.B.:  Normally an override of BINDIR is set in the Makefile.inc in the parent
-# directory, e.g. for this package it would be in /usr/src/libexec/Makefile.inc
+# adjusted, e.g. ap|pre-pended to, within a Makefile -- they can only be set in
+# the environment!
 #
-BINDIR =		/libexec	# install location (prefixed with DESTDIR)
+# Variables set on the command line are effectively always set last, after all
+# Makefiles have been read and processed.  Variables set in the environment are
+# set first, before any Makefiles have been read.  Makefiles use "?=" to provide
+# defaults for variables that can be customised in environment variables.
+
+# On FreeBSD (at least since 14.0), static-linking requires setting
+# NO_SHARED=yes in the environment.  On NetBSD set LDSTATIC=-static.
 
 # Wrap the basic BSD Makefile.main with header and footer files for stand-alone
-# builds (on non-BSD systems), and for and development work.
+# builds (and builds on non-BSD systems), and for and development work.
 #
 .include "${.CURDIR}/Makefile.inc"
 #
 # This must be the first target seen by make.
 #
 # Depending on "bmake-test-obj-again" is a workaround for versions of make which
-# do not fully support MKOBJDIRS=auto.
+# do not fully support MKOBJDIRS=auto (usually set with MK_AUTO_OBJ).
 #
 all: .PHONY .MAKE bmake-test-obj-again .WAIT ${BUILDTARGETS}
 
-# Now the main project Makefile
+# Now fetch the main project Makefile
 #
-.include "${.CURDIR}/Makefile.main"	# xxx should rename to Makefile.project?
+.include "${.CURDIR}/Makefile.main"
 
-# This must be after <bsd.prog.mk> (normally included above via Makefile.main)
+# This must be after <bsd.prog.mk> or <bsd.lib.mk> (normally included above via
+# Makefile.main)
 #
 .include "${.CURDIR}/Makefile.end"
 
-#
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} " (default-value 'compile-command) " -j 8 LDSTATIC=-static obj depend all")
+# compile-command: (concat "BUILD_DIR=build-$(uname -s)-$(uname -p)-$(uname -r); mkdir -p ${BUILD_DIR}; MAKEOBJDIRPREFIX=$(pwd -P)/${BUILD_DIR} LDSTATIC=-static " (default-value 'compile-command) " -j 8 all")
 # End:
 #
