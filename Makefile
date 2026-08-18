@@ -95,11 +95,6 @@ LDFLAGS ?=	# Additional linker flags, e.g. -I/usr/local/lib (in env!)
 # On FreeBSD (at least since 14.0), static-linking requires setting
 # NO_SHARED=yes in the environment.  On NetBSD set LDSTATIC=-static.
 
-# Wrap the basic BSD Makefile.main with header and footer files for stand-alone
-# builds (and builds on non-BSD systems), and for and development work.
-#
-.include "${.CURDIR}/Makefile.inc"
-#
 # This must be the first target seen by make.
 #
 # Depending on "bmake-test-obj-again" is a workaround for versions of make which
@@ -111,8 +106,17 @@ all: .PHONY .MAKE bmake-test-obj-again .WAIT ${BUILDTARGETS}
 #
 .include "${.CURDIR}/Makefile.main"
 
-# This must be after <bsd.prog.mk> or <bsd.lib.mk> (normally included above via
-# Makefile.main)
+# Note that normally a ../Makefile.inc is included via a <bsd.*.mk> file after
+# the body of the main Makefile is read, but since we're outside of a BSD style
+# source tree we need to include it here.
+#
+# xxx Makefile.end could include Makefile.inc instead, but for now it is done
+# here for better visibility and clarity.
+#
+.include "${.CURDIR}/Makefile.inc"
+
+# This must also be after <bsd.prog.mk> or <bsd.lib.mk> or <bsd.subdir.mk> (one
+# of which is normally included via Makefile.main)
 #
 .include "${.CURDIR}/Makefile.end"
 
