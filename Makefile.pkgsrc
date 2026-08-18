@@ -1,0 +1,98 @@
+# -*- makefile-bsdmake -*-
+
+DISTNAME=	fingerd-2.1.0
+#PKGREVISION=	0
+CATEGORIES=	net
+
+MASTER_SITES=		${MASTER_SITE_GITHUB:=robohack/}
+#GITHUB_PROJECT=	fingerd
+GITHUB_TAG=		release-${PKGVERSION_NOREV}
+
+OWNER=		woods@planix.ca
+HOMEPAGE=	http://www.planix.com/~woods/projects/${PKGBASE}.html
+COMMENT=	A safer and more configurable version of this infamous daemon
+LICENSE=	modified-bsd
+
+USE_LANGUAGES=		c c99
+
+USE_BSD_MAKEFILE=	yes
+BSD_MAKE_BUILD_DIR=	${WRKDIR}/pkgbuild
+MAKE_ENV+=		MAKEOBJDIRPREFIX=${BSD_MAKE_BUILD_DIR}
+
+# XXX will this work with PLIST_TYPE???  probably not!
+#
+AUTO_MKDIRS=		yes
+
+# totally automatic PLIST generation -- probably preferable?
+#
+PLIST_TYPE=		dynamic
+
+.include "../../mk/bsd.prefs.mk"
+
+PLIST_SUBST+=	PREFIX=${PREFIX:Q}
+
+# N.B.:  the following depend on PKGMAKECONF=/etc/mk.conf or the moral equivalent
+# xxx they are also not needed if pkgsrc is properly patched to do this itself!
+#
+PLIST_VARS+=		mkdebug
+.if ${MKDEBUG:Uno:tl} != "no" && !defined(NODEBUG)
+PLIST.mkdebug=		yes
+INSTALLATION_DIRS+=	libdata/debug/${PREFIX}/bin
+INSTALLATION_DIRS+=	libdata/debug/${PREFIX}/libexec
+INSTALLATION_DIRS+=	libdata/debug/${PREFIX}/sbin
+.endif
+
+do-configure:
+	${MKDIR} ${BSD_MAKE_BUILD_DIR}
+
+pre-build:
+	cd ${WRKSRC} && ${BUILD_MAKE_CMD} obj
+
+FILES=	samples/fingerd.acl \
+	samples/fingerd.motd \
+	samples/fingerd.users
+
+EGDIR=			${PREFIX}/share/examples/${PKGBASE}
+INSTALLATION_DIRS+=	${EGDIR}
+
+CONF_FILES=	# empty
+.for _cf in ${FILES}
+CONF_FILES+=	${EGDIR}/${_cf:T} ${PKG_SYSCONFDIR}/${_cf:T}
+.endfor
+
+# XXX is there any way this could use the standard "configinstall" target via
+# including <bsd.files.mk> in Makefile.main???
+#
+post-install:
+.for _file in ${FILES}
+	${INSTALL_DATA} ${WRKSRC}/${_file} ${DESTDIR}${EGDIR}
+.endfor
+
+# how to get from there to here....
+#
+#	# commit anything outstanding...
+#	# update DISTNAME above and PACKAGE_* in Makefile.main...
+#	git add Makefile.project Makefile.pkgsrc
+#	git commit -m 'Makefile.project, Makefile.pkgsrc: ready for release: ${PKGVERSION_NOREV}'
+#	# write release notes in doc/release-${PKGVERSION_NOREV}.md
+#	git tag -a -s -F doc/release-${PKGVERSION_NOREV}.md release-${PKGVERSION_NOREV}
+#	gh release create release-${PKGVERSION_NOREV} -t "Version ${PKGVERSION_NOREV}" --verify-tag --notes-from-tag
+#
+# Now, still in your ${REPODIR}, (or wherever you have cloned
+# https://github.com/robohack/fingerd to), run:
+#
+#	mkdir -p /usr/pkgsrc/net/fingerd
+#	cp Makefile.pkgsrc /usr/pkgsrc/net/fingerd/Makefile
+#	cd /usr/pkgsrc/net/fingerd
+#	make setup-pkgsrc
+#
+REPODIR?=	${OLDPWD}
+PKGDIR?=	${PKGSRCDIR}/${CATEGORIES:[1]}/${PKGBASE}
+setup-pkgsrc:	# set up a pkgsrc module for this project
+	mkdir -p ${PKGDIR}
+	cd ${REPODIR} && pax -rw -v -s '|\.pkgsrc$$||' *.pkgsrc ${PKGDIR}
+	cd ${PKGDIR} && make fetch
+	cd ${PKGDIR} && make makesum
+	cd ${PKGDIR} && make test
+
+.include "../../mk/bsd.pkg.mk"

@@ -1,0 +1,4 @@
+Fingerd -- A safer and more configurable version of this infamous daemon.
+
+Fingerd provides the remote finger service for the finger(1) command and is
+normally invoked by inetd(8) on demand.
