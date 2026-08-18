@@ -1,15 +1,15 @@
 # -*- makefile-bsdmake -*-
 #
-#	Makefile.internal - input for BSD Make
+#	Makefile.main - input for BSD Make
 #
 # Copyright (C) 2025 Greg A. Woods - This work is licensed under the Creative
 # Commons Attribution-ShareAlike 4.0 International License.  To view a copy of
 # the license, visit <URL:http://creativecommons.org/licenses/by-sa/4.0/>, or
 # send a letter to:  Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
-#
-# This file should be usable as the main Makefile in a BSD source tree.
 
-# adjust these as necessary
+# This file should be usable as the main Makefile in a full BSD source tree.
+
+# adjust these as necessary (e.g. set them on the make command-line)
 PATH_SYSCONFDIR ?=	/etc		# location of configuration files
 PATH_FINGER ?=		/usr/bin/finger	# location of the finger(1) program
 
@@ -17,11 +17,20 @@ PATH_FINGER ?=		/usr/bin/finger	# location of the finger(1) program
 
 PACKAGE_NAME =	fingerd
 
+# N.B.:  Remember to update DISTNAME in Makefile.pkgsrc when updating these!
+#
 PACKAGE_MAJOR =	2
 PACKAGE_MINOR =	0
 PACKAGE_MICRO =	0
 
 PACKAGE_VERSION =	${PACKAGE_MAJOR}.${PACKAGE_MINOR}.${PACKAGE_MICRO}
+
+# N.B.:  normally this would/is set by the parent source directory's
+# Makefile.inc file (which, if it exists, is always sourced by <bsd.prog.mk>),
+# but since that doesn't exist for a stand-alone project, or in pkgsrc, we set
+# it here (possibly overriding the independent project's Makefile.inc setting).
+#
+BINDIR :=	/libexec
 
 _PACKAGE_NAME =		"${PACKAGE_NAME}"
 CPPFLAGS += -DPACKAGE_NAME=${_PACKAGE_NAME:Q}
@@ -49,7 +58,7 @@ CSTD=			c89
 #
 CPPFLAGS += -DHAVE_LIBWRAP
 LDADD += -lwrap
-DPADD += ${LIBWRAP}
+#DPADD += ${LIBWRAP}	# in a standalone build this will generate an error
 
 PROG =	fingerd
 
@@ -61,9 +70,9 @@ DOCS =		AUTHORS COPYING NEWS README THANKS ToDo
 
 # XXX these should also be put in ${PREFIX}/share/examples/${PACKAGE_NAME} for packages
 #
-FILES=	samples/fingerd.acl \
-	samples/fingerd.motd \
-	samples/fingerd.users
+CONFIGFILES=	samples/fingerd.acl \
+		samples/fingerd.motd \
+		samples/fingerd.users
 
 version.o: Makefile
 
@@ -93,19 +102,25 @@ docs: .PHONY ${DOCS} ${MAN}
 # separately).  This step is optimised so that it doesn't have to descend
 # recursively through every source directory and Makefile in the project, but as
 # a result that means there must be a hook in src/etc/Makefile.  It could also
-# be done with <bsd.files.mk>, which is then triggered with a "configinstall"
-# target, but again that still needs the hook in src/etc/Makefile!
+# be done with <bsd.files.mk>, which is then triggered with the default
+# "configinstall" target (they are already listed as CONFIGFILES), but again
+# that still needs the hook in src/etc/Makefile!
 #
 # So, to avoid further portability complications with also including
 # <bsd.files.mk> we'll just provide a "distribution" target here and any systems
-# integrators will have to ensure it gets called at the right time in their
-# release process.
+# integrators will have to either ensure it gets called at the right time in
+# their release process, or conversely add ".include <bsd.files.mk>" below and
+# make sure that a "make configinstall" is done in this source directory.
 #
 distribution:	# install sample configuration files
 distribution: .PHONY
-.for _F in ${FILES:O:u}
+.for _F in ${CONFIGFILES:O:u}
 	${INSTALL} -c -o root -g wheel -m 644 ${.CURDIR}/${_F} ${DESTDIR}/etc
 .endfor
+
+# just make sure it runs and can display its command-line help
+regress: all
+	@fingerd -? || true
 
 .include <bsd.prog.mk>
 
