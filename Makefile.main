@@ -15,6 +15,10 @@ PATH_FINGER ?=		/usr/bin/finger	# location of the finger(1) program
 
 # You shouldn't have to change anything below here.
 
+# xxx Some of the settings below could be moved to a Makefile.project file, but
+# then it would need to be renamed to Makefile.inc if this project were to be
+# used in a BSD source tree.
+
 PACKAGE_NAME =	fingerd
 
 # N.B.:  Remember to update DISTNAME in Makefile.pkgsrc when updating these!
@@ -24,6 +28,11 @@ PACKAGE_MINOR =	0
 PACKAGE_MICRO =	0
 
 PACKAGE_VERSION =	${PACKAGE_MAJOR}.${PACKAGE_MINOR}.${PACKAGE_MICRO}
+
+# this project is all pure standard C
+#
+CSTD = c99
+CWARNFLAGS += -pedantic
 
 # N.B.:  normally this would/is set by the parent source directory's
 # Makefile.inc file (which, if it exists, is always sourced by <bsd.prog.mk>),
